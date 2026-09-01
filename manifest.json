@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "myQU Banner — UI Enhancer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Restyles mybanner.qu.edu.qa in place. Two themes (QU maroon / ACM mint), light and dark, EN and AR. Same server, same pages, same data.",
   "permissions": ["storage"],
   "host_permissions": ["https://mybanner.qu.edu.qa/*"],
@@ -20,5 +20,20 @@
       "matches": ["https://mybanner.qu.edu.qa/*"]
     }
   ],
-  "action": { "default_popup": "src/popup.html" }
+  "icons": {
+    "16": "assets/icon/16.png",
+    "32": "assets/icon/32.png",
+    "48": "assets/icon/48.png",
+    "128": "assets/icon/128.png"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "myQU Banner — UI Enhancer",
+    "default_icon": {
+      "16": "assets/icon/16.png",
+      "32": "assets/icon/32.png",
+      "48": "assets/icon/48.png",
+      "128": "assets/icon/128.png"
+    }
+  }
 }

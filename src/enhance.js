@@ -1807,7 +1807,7 @@
   // Exposed for debugging from the console only. Holds no page data.
   Object.defineProperty(window, '__quEnhancer', {
     value: Object.freeze({
-      version: '0.1.0',
+      version: '1.0.0',
       LOGOUT_TRAP: LOGOUT_TRAP,
       hasCredentials: hasCredentials,
       targetFromId: targetFromId,
