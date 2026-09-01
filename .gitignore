@@ -1,0 +1,16 @@
+# Packaged builds
+*.zip
+*.crx
+*.pem
+dist/
+
+# Dependencies, if any are ever added
+node_modules/
+
+# Editor and OS noise
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

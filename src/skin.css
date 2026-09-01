@@ -1,0 +1,3610 @@
+/* Skin for mybanner.qu.edu.qa. Injected at document_start, on top of Banner
+   8.11 and Ellucian Cascade.
+
+   Two things to know before editing this file.
+
+   Every rule carries !important. app-overrides.css — QU's own customisation
+   layer — uses !important on backgrounds, and around 72 elements carry
+   JS-written inline styles, so an author-normal rule loses whatever its
+   specificity. Every selector is also prefixed html.qu-x, which keeps this
+   sheet ahead on specificity rather than relying on cascade order.
+
+   Tokens are one semantic set (--x-*) with four value scopes on
+   html[data-qux]: qu-light (the default), qu-dark, acm-light, acm-dark. */
+
+/* ==========================================================================
+   0. FIRST RULES — everything else depends on these
+   ========================================================================== */
+
+/* 0.1 Un-poison rem. The site sets font-size:0.98em on ~60 element types,
+   html and div among them, so it compounds per nesting level
+   (16 → 15.68 → 15.37 → …) and 1rem ends up 15.68px document-wide. */
+html.qu-x {
+  font-size: 16px !important;
+}
+html.qu-x,
+html.qu-x body,
+html.qu-x div,
+html.qu-x span,
+html.qu-x h1,
+html.qu-x h2,
+html.qu-x h3,
+html.qu-x h4,
+html.qu-x h5,
+html.qu-x h6,
+html.qu-x p,
+html.qu-x a,
+html.qu-x li,
+html.qu-x ul,
+html.qu-x ol,
+html.qu-x td,
+html.qu-x th,
+html.qu-x table,
+html.qu-x tbody,
+html.qu-x thead,
+html.qu-x tr,
+html.qu-x caption,
+html.qu-x form,
+html.qu-x fieldset,
+html.qu-x label,
+html.qu-x button,
+html.qu-x input,
+html.qu-x select,
+html.qu-x textarea {
+  font-size: 1rem;
+  font-family: var(--x-font-ui) !important;
+}
+
+/* Extension-injected spans must inherit, not be flattened by the rule above. */
+html.qu-x .qu-en,
+html.qu-x .qu-name,
+html.qu-x .qu-ar-only {
+  font-size: inherit !important;
+  font-family: inherit !important;
+}
+html.qu-x .qu-ar-only,
+html.qu-x .qu-ar {
+  font-family: var(--x-font-ar) !important;
+}
+
+/* 0.2 Release the structural clamps that the carousel imposes. */
+html.qu-x #contentHolder {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  position: static !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+html.qu-x #menuTrackInst {
+  /* the carousel track is sized inline by JS; the row layout is in section 6 */
+  width: auto !important;
+}
+html.qu-x #contentBelt {
+  left: 0 !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+}
+html.qu-x .htmlButtonLevel2-3 {
+  height: auto !important;
+  min-height: 0 !important;
+}
+html.qu-x .navArrowLeft,
+html.qu-x .navArrowRight,
+html.qu-x .navArrowLeftSmall,
+html.qu-x .navArrowRightSmall,
+html.qu-x .navArrowLeftDisabled,
+html.qu-x .navArrowRightDisabled,
+html.qu-x .menuItemSeperator,
+html.qu-x #areas,
+html.qu-x #browseButton,
+html.qu-x #browseMenuContainer,
+html.qu-x #browseMenu,
+html.qu-x #browseButtonBottom,
+html.qu-x .bottomDropShadow,
+html.qu-x #outerFooter,
+html.qu-x .bg3,
+html.qu-x img.headerImg,
+html.qu-x .backurl {
+  display: none !important;
+}
+
+/* #content is position:absolute, so the page never grows to fit content. */
+html.qu-x #content {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* The site floats every structural container. A float ignores
+   margin-inline:auto, so the centred column below never centres until these
+   are cleared. */
+html.qu-x #content,
+html.qu-x #bodyContainer,
+html.qu-x #pageheader,
+html.qu-x #pagebody,
+html.qu-x #pagetitle,
+html.qu-x #crumb,
+html.qu-x #navigationcontrol,
+html.qu-x #navigationcontrolSmall,
+html.qu-x .menucontainer,
+html.qu-x #menuTrackInst,
+html.qu-x .menuitem,
+html.qu-x #contentHolder,
+html.qu-x #contentBelt,
+html.qu-x .htmlButtonLevel2-3,
+html.qu-x .staticheaders,
+html.qu-x .pagebodydiv,
+html.qu-x #pagefooter,
+html.qu-x #globalFooter,
+html.qu-x .disclaimer,
+html.qu-x #globalNav,
+html.qu-x .institutionalBranding,
+html.qu-x #welcomemessage,
+html.qu-x .breadCrumb,
+html.qu-x .sitemaplink,
+html.qu-x .descriptionText,
+html.qu-x .menucontainer {
+  float: none !important;
+  clear: none !important;
+}
+
+/* 0.3 Hide the dead legacy layer.
+   .headerwrapperdiv and .pagetitlediv are duplicate chrome on EVERY page —
+   the search box, the "myQU Self Service" heading, the RETURN TO MENU /
+   SITE MAP / HELP / EXIT strip and a second copy of the identity block. The
+   real chrome is #header + .staticheaders.
+   .pagebodydiv is different: it is dead markup on menu pages but it IS the
+   whole UI on leaf pages, so it is only hidden under .qu-menu. */
+html.qu-x .headerwrapperdiv,
+html.qu-x .pagetitlediv,
+html.qu-x #pagetitle {
+  display: none !important;
+}
+html.qu-x.qu-menu .pagebodydiv {
+  display: none !important;
+}
+
+/* Spacer cells stay in the row so column counts survive; they just carry
+   nothing. Hiding them with display:none shifts every later column. */
+html.qu-x td.dedead,
+html.qu-x td.dddead,
+html.qu-x td.whitespace1,
+html.qu-x td.whitespace2 {
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  background: none !important;
+  border: 0 !important;
+}
+html.qu-x span.whitespace1,
+html.qu-x span.whitespace2,
+html.qu-x div.whitespace1,
+html.qu-x div.whitespace2 {
+  display: none !important;
+}
+
+/* ==========================================================================
+   1. TOKENS — one semantic set, four value scopes
+   ========================================================================== */
+
+html.qu-x,
+html.qu-x[data-qux='qu-light'] {
+  --x-brand: #8e1637;
+  --x-on-brand: #ffffff;
+  --x-brand-hover: #6f1029;
+  --x-brand-text: #8e1637;
+  --x-brand-tint: #f7e9ee;
+  --x-brand-tint-border: #e5c3cf;
+  --x-header-bg: #8e1637;
+  --x-header-ink: #ffffff;
+
+  --x-page: #faf8f9;
+  --x-surface: #ffffff;
+  --x-surface-2: #f3edef;
+  --x-ink: #221419;
+  --x-body: #46363d;
+  --x-muted: #7a6970;
+  --x-hairline: #e8dee2;
+  --x-border-strong: #c3b2ba;
+
+  --x-info-text: #1a5f8a; --x-info-bg: #e9f3fa; --x-info-border: #b5d6ec;
+  --x-warn-text: #875312; --x-warn-bg: #fcf3e2; --x-warn-border: #ecd4a7;
+  --x-error-text: #a41e2d; --x-error-bg: #fdedef; --x-error-border: #f2c1c8;
+  --x-ok-text: #216e3c; --x-ok-bg: #e9f6ed; --x-ok-border: #bfe3cb;
+
+  --x-link: #8e1637;
+  --x-link-hover: #6f1029;
+  --x-focus: #8e1637;
+
+  --x-font-ui: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --x-font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --x-font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --x-font-ar: "Droid Arabic Kufi", "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
+
+  --x-w-h1: 700; --x-w-h2: 600; --x-w-h3: 500;
+
+  --x-r-ctl: 0px; --x-r-card: 0px; --x-r-field: 0px;
+  --x-r-area: 0px; --x-r-pill: 0px;
+
+  --x-shadow-card: 0 1px 1px rgba(24, 12, 17, 0.02);
+  --x-shadow-pop: 0 2px 6px rgba(24, 12, 17, 0.035);
+  --x-shadow-overlay: 0 4px 12px rgba(24, 12, 17, 0.05);
+  --x-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+html.qu-x[data-qux='qu-dark'] {
+  --x-brand: #8e1637;
+  --x-on-brand: #ffffff;
+  --x-brand-hover: #a83553;
+  --x-brand-text: #e58aa2;
+  --x-brand-tint: #2e1720;
+  --x-brand-tint-border: #4d2533;
+  --x-header-bg: #5f0f26;
+  --x-header-ink: #ffffff;
+
+  --x-page: #171114;
+  --x-surface: #211a1e;
+  --x-surface-2: #2a2126;
+  --x-ink: #f5eef1;
+  --x-body: #d8ccd1;
+  --x-muted: #a2929a;
+  --x-hairline: #372c32;
+  --x-border-strong: #55464e;
+
+  --x-info-text: #8cc3e8; --x-info-bg: #132430; --x-info-border: #26506b;
+  --x-warn-text: #e6b877; --x-warn-bg: #2d2314; --x-warn-border: #5c4722;
+  --x-error-text: #f09aa4; --x-error-bg: #331418; --x-error-border: #66242e;
+  --x-ok-text: #8fd4a5; --x-ok-bg: #12291a; --x-ok-border: #2c5c3e;
+
+  --x-link: #e58aa2;
+  --x-link-hover: #f2b3c3;
+  --x-focus: #e58aa2;
+
+  --x-shadow-card: none;
+  --x-shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.16);
+  --x-shadow-overlay: 0 4px 12px rgba(0, 0, 0, 0.21);
+}
+
+html.qu-x[data-qux='acm-light'] {
+  --x-brand: #3ae4d1;
+  --x-on-brand: #010000;
+  --x-brand-hover: #42a7ae;
+  --x-brand-text: #17756a;
+  --x-brand-tint: #e0f8f5;
+  --x-brand-tint-border: #a7e8e0;
+  --x-header-bg: #010000;
+  --x-header-ink: #fbfafb;
+
+  --x-page: #fbfafb;
+  --x-surface: #ffffff;
+  --x-surface-2: #f1f0f1;
+  --x-ink: #010000;
+  --x-body: #373637;
+  --x-muted: #706d70;
+  --x-hairline: #e2e0e2;
+  --x-border-strong: #373637;
+
+  --x-link: #17756a;
+  --x-link-hover: #115e55;
+  --x-focus: #17756a;
+
+  --x-font-ui: "Lexend", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --x-font-display: "Poppins", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --x-font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+
+  --x-w-h1: 800; --x-w-h2: 700; --x-w-h3: 600;
+
+  --x-r-ctl: 999px; --x-r-card: 0px; --x-r-field: 999px;
+  --x-r-area: 12px; --x-r-pill: 999px;
+
+  --x-shadow-card: none;
+  --x-shadow-pop: 4px 4px 0 0 #2fbbab;
+  --x-shadow-overlay: 6px 6px 0 0 #2fbbab;
+  --x-ease: cubic-bezier(0, 0.8, 0.2, 1);
+}
+
+html.qu-x[data-qux='acm-dark'] {
+  --x-brand: #3ae4d1;
+  --x-on-brand: #010000;
+  --x-brand-hover: #8ff0e4;
+  --x-brand-text: #3ae4d1;
+  --x-brand-tint: #0d2724;
+  --x-brand-tint-border: #1f4b45;
+  --x-header-bg: #010000;
+  --x-header-ink: #fbfafb;
+
+  --x-page: #010000;
+  --x-surface: #101312;
+  --x-surface-2: #1a1d1c;
+  --x-ink: #fbfafb;
+  --x-body: #d6d4d6;
+  --x-muted: #9c999c;
+  --x-hairline: #262a29;
+  --x-border-strong: #4c504e;
+
+  --x-info-text: #8cc3e8; --x-info-bg: #132430; --x-info-border: #26506b;
+  --x-warn-text: #e6b877; --x-warn-bg: #2d2314; --x-warn-border: #5c4722;
+  --x-error-text: #f09aa4; --x-error-bg: #331418; --x-error-border: #66242e;
+  --x-ok-text: #8fd4a5; --x-ok-bg: #12291a; --x-ok-border: #2c5c3e;
+
+  --x-link: #3ae4d1;
+  --x-link-hover: #8ff0e4;
+  --x-focus: #3ae4d1;
+
+  --x-font-ui: "Lexend", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --x-font-display: "Poppins", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --x-font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+
+  --x-w-h1: 800; --x-w-h2: 700; --x-w-h3: 600;
+
+  --x-r-ctl: 999px; --x-r-card: 0px; --x-r-field: 999px;
+  --x-r-area: 12px; --x-r-pill: 999px;
+
+  --x-shadow-card: none;
+  --x-shadow-pop: 4px 4px 0 0 #2fbbab;
+  --x-shadow-overlay: 6px 6px 0 0 #2fbbab;
+  --x-ease: cubic-bezier(0, 0.8, 0.2, 1);
+}
+
+/* The QU theme is sharp-cornered everywhere, including shapes that carry a
+   hardcoded radius. The ACM theme keeps its pill-and-square language. */
+html.qu-x[data-qux^='qu-'] #content *,
+html.qu-x[data-qux^='qu-'] #header * {
+  border-radius: 0 !important;
+}
+
+/* ==========================================================================
+   2. PAGE FRAME
+   ========================================================================== */
+
+html.qu-x,
+html.qu-x body {
+  background: var(--x-page) !important;
+  color: var(--x-body) !important;
+  -webkit-font-smoothing: antialiased;
+  overflow: visible !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  max-height: none !important;
+}
+html.qu-x body {
+  /* cascade.css ships body{display:none} as its own anti-flash and relies on
+     Cascade's JS to reveal it. Any page where that reveal does not run — a
+     slow build, a script error, a back-navigation — stays blank. This
+     extension has its own visibility guard, so forcing the body visible here
+     removes a whole class of blank pages. */
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh !important;
+}
+html.qu-x #bodyContainer,
+html.qu-x #pagebody,
+html.qu-x #pageheader {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  position: static !important;
+}
+
+/* One shared content column. */
+html.qu-x #pageheader,
+html.qu-x #pagebody,
+html.qu-x.qu-leaf .pagebodydiv,
+html.qu-x.qu-leaf #navigationcontrolSmall,
+html.qu-x #navigationcontrol {
+  box-sizing: border-box !important;
+  max-width: 1440px !important;
+  margin-inline: auto !important;
+  padding-inline: 32px !important;
+}
+html.qu-x.qu-leaf #content.level4 {
+  max-width: none !important;
+}
+
+html.qu-x a {
+  color: var(--x-link) !important;
+  text-decoration: none !important;
+}
+html.qu-x a:hover {
+  color: var(--x-link-hover) !important;
+  text-decoration: underline !important;
+}
+html.qu-x :focus-visible {
+  outline: 2px solid var(--x-focus) !important;
+  outline-offset: 2px !important;
+}
+html.qu-x .skiplinks {
+  position: absolute !important;
+  left: -9999px !important;
+}
+html.qu-x .skiplinks:focus {
+  position: static !important;
+  left: auto !important;
+}
+
+/* Arabic is a separate typographic object: its own face, its own step. */
+html.qu-x .qu-ar,
+html.qu-x .qu-ar-only,
+html.qu-x [dir='rtl'] {
+  font-family: var(--x-font-ar) !important;
+}
+
+/* ==========================================================================
+   3. GLOBAL BAR — lockup, sign out / help, switcher
+   A 64px band, padding 0 32px, gap 16. Order across it: QU mark · divider ·
+   ACM mark · "Redesign" ····· Sign Out · Help · [QU|ACM] · moon. The search
+   is not in this bar — it sits beside the page title, in section 5.
+   ========================================================================== */
+
+html.qu-x #header {
+  background: var(--x-header-bg) !important;
+  background-image: none !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  padding: 0 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  position: relative !important;
+  z-index: 40 !important;
+}
+
+/* Source order in #header is globalNav, branding, areas — so the lockup is
+   ordered explicitly rather than relying on the DOM. QU mark first. */
+html.qu-x .institutionalBranding { order: 1 !important; }
+html.qu-x .qu-lockup-acm { order: 2 !important; }
+html.qu-x #globalNav { order: 3 !important; margin-inline-start: auto !important; }
+
+/* QU mark: 40px tall, first, and never smaller than the ACM mark.
+   The source image is 352x249, so 40px tall is ~57px wide. */
+html.qu-x .institutionalBranding {
+  position: static !important;
+  inset: auto !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 57px !important;
+  height: 40px !important;
+  flex: none !important;
+  align-self: center !important;
+  display: block !important;
+  background-position: center !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+html.qu-x .qu-lockup-acm {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex: none !important;
+  align-self: center !important;
+}
+html.qu-x .qu-lockup-divider {
+  width: 1px !important;
+  height: 32px !important;
+  flex: none !important;
+  background: color-mix(in srgb, var(--x-header-ink) 35%, transparent) !important;
+}
+html.qu-x .qu-lockup-mark {
+  width: 30px !important;
+  height: 30px !important;
+  flex: none !important;
+  background-image: var(--qu-acm-mark) !important;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+html.qu-x .qu-lockup-word {
+  font: 500 12px/1 var(--x-font-ui) !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: var(--x-header-ink) !important;
+  white-space: nowrap !important;
+}
+html.qu-x[data-qux^='acm-'] .qu-lockup-word {
+  font-family: var(--x-font-mono) !important;
+  font-weight: 700 !important;
+  color: #3ae4d1 !important;
+}
+
+/* Sign Out / Help — plain text, no icons, vertically centred in the band. */
+html.qu-x #globalNav {
+  float: none !important;
+  position: static !important;
+  inset: auto !important;
+  margin-block: 0 !important;
+  padding: 0 !important;
+  flex: none !important;
+  display: flex !important;
+  align-items: center !important;
+}
+html.qu-x #globalNav > div,
+html.qu-x #globalNav ul {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  background: none !important;
+  height: auto !important;
+}
+html.qu-x #globalNav li {
+  background: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  display: flex !important;
+  align-items: center !important;
+  height: auto !important;
+  float: none !important;
+}
+html.qu-x #globalNav a {
+  font: 400 13px/1 var(--x-font-ui) !important;
+  color: var(--x-header-ink) !important;
+  opacity: 0.92 !important;
+  background: none !important;
+  background-image: none !important;
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+html.qu-x #globalNav a:hover {
+  opacity: 1 !important;
+  text-decoration: underline !important;
+  color: var(--x-header-ink) !important;
+}
+/* No icons on these two links. */
+html.qu-x #globalNav a::before,
+html.qu-x #globalNav a::after {
+  content: none !important;
+}
+
+/* --- Theme switcher (extension-owned; the only new control) ------------ */
+
+html.qu-x .qu-switch {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+html.qu-x .qu-seg {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: none !important;
+  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+}
+html.qu-x .qu-seg-btn {
+  font: 600 11px/1 var(--x-font-ui) !important;
+  padding: 8px 12px !important;
+  border: 0 !important;
+  margin: 0 !important;
+  background: none !important;
+  color: var(--x-header-ink) !important;
+  opacity: 0.75 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: background 0.15s var(--x-ease), opacity 0.15s var(--x-ease) !important;
+}
+html.qu-x .qu-seg-btn[data-qu-lang='ar'] {
+  font: 700 11px/1.2 var(--x-font-ar) !important;
+  padding: 6px 12px !important;
+}
+html.qu-x .qu-seg-btn:hover {
+  opacity: 1 !important;
+}
+html.qu-x .qu-seg-btn[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--x-header-ink) 18%, transparent) !important;
+  opacity: 1 !important;
+}
+html.qu-x[data-qux^='acm-'] .qu-seg-btn[aria-pressed='true'] {
+  background: #3ae4d1 !important;
+  color: #010000 !important;
+}
+/* One control, two states — moon to go dark, sun to come back. */
+html.qu-x .qu-mode-btn {
+  width: 32px !important;
+  height: 32px !important;
+  flex: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
+  border-radius: 999px !important;
+  background: none !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html.qu-x .qu-mode-btn::before {
+  content: '' !important;
+  width: 15px !important;
+  height: 15px !important;
+  background: var(--x-header-ink) !important;
+  -webkit-mask: var(--qu-i-moon) center / contain no-repeat !important;
+  mask: var(--qu-i-moon) center / contain no-repeat !important;
+}
+html.qu-x[data-qux$='-dark'] .qu-mode-btn::before {
+  -webkit-mask-image: var(--qu-i-sun) !important;
+  mask-image: var(--qu-i-sun) !important;
+}
+html.qu-x .qu-off-btn {
+  width: 32px !important;
+  height: 32px !important;
+  flex: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
+  border-radius: 999px !important;
+  background: none !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html.qu-x .qu-off-btn::before {
+  content: '' !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: var(--x-header-ink) !important;
+  -webkit-mask: var(--qu-i-x) center / contain no-repeat !important;
+  mask: var(--qu-i-x) center / contain no-repeat !important;
+}
+html.qu-x .qu-off-btn:hover {
+  background: color-mix(in srgb, var(--x-header-ink) 15%, transparent) !important;
+}
+
+html.qu-x .qu-switch :focus-visible {
+  outline: 2px solid var(--x-header-ink) !important;
+  outline-offset: 2px !important;
+}
+
+/* ==========================================================================
+   4. SEARCH
+   One box: the border and background belong to the input, and the magnifier
+   is absolutely positioned over it. #searchField must contribute no second
+   frame of its own.
+   ========================================================================== */
+
+html.qu-x #search {
+  position: relative !important;
+  inset: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: none !important;
+  width: auto !important;
+  height: 40px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  z-index: 50 !important;
+}
+html.qu-x .searchBase {
+  display: none !important;
+}
+html.qu-x #searchField {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 40px !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+html.qu-x .searchInput {
+  box-sizing: border-box !important;
+  height: 40px !important;
+  width: 280px !important;
+  max-width: 100% !important;
+  padding-block: 0 !important;
+  padding-inline: 36px 14px !important;
+  margin: 0 !important;
+  background: var(--x-surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--x-border-strong) !important;
+  border-radius: var(--x-r-field) !important;
+  color: var(--x-ink) !important;
+  font: 400 14px/1 var(--x-font-ui) !important;
+  outline: none !important;
+  /* Follow the typed text, not the UI language: the server placeholder is
+     English but students search in either script. */
+  unicode-bidi: plaintext !important;
+  text-align: start !important;
+}
+html.qu-x .searchInput:focus-visible {
+  border-color: var(--x-brand-text) !important;
+  outline: 2px solid var(--x-brand-text) !important;
+  outline-offset: 1px !important;
+}
+html.qu-x .findicon,
+html.qu-x .closeicon {
+  position: absolute !important;
+  width: 15px !important;
+  height: 15px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background-color: var(--x-muted) !important;
+  background-image: none !important;
+  flex: none !important;
+  cursor: pointer !important;
+  font-size: 0 !important;
+  color: transparent !important;
+  -webkit-mask: var(--qu-i-search) center / contain no-repeat !important;
+  mask: var(--qu-i-search) center / contain no-repeat !important;
+}
+html.qu-x .findicon {
+  inset-inline-start: 12px !important;
+}
+html.qu-x .closeicon {
+  inset-inline-end: 12px !important;
+  width: 13px !important;
+  height: 13px !important;
+  -webkit-mask-image: var(--qu-i-x) !important;
+  mask-image: var(--qu-i-x) !important;
+}
+
+/* --- Results overlay -------------------------------------------------- */
+
+html.qu-x .findPageOverlay {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  inset-inline-end: 0 !important;
+  width: 380px !important;
+  max-width: 92vw !important;
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-area) !important;
+  box-shadow: var(--x-shadow-overlay) !important;
+  padding: 8px !important;
+  z-index: 60 !important;
+}
+html.qu-x .findPageOverlay hr {
+  display: none !important;
+}
+html.qu-x .findPageOverlay_count {
+  font: 500 12px/1.4 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  padding: 6px 10px 10px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+}
+html.qu-x .findPageOverlay ul {
+  list-style: none !important;
+  margin: 6px 0 0 !important;
+  padding: 0 !important;
+}
+html.qu-x .findPageOverlay li.qu-dupe {
+  display: none !important;
+}
+html.qu-x .findPageOverlay li {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+html.qu-x .findPageOverlay li a,
+html.qu-x a.ac_even,
+html.qu-x a.ac_odd {
+  display: block !important;
+  position: relative !important;
+  min-height: 40px !important;
+  padding-block: 10px !important;
+  padding-inline: 34px 10px !important;
+  font: 400 14px/1.4 var(--x-font-ui) !important;
+  color: var(--x-body) !important;
+  background: none !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  text-decoration: none !important;
+}
+html.qu-x .findPageOverlay li a::before {
+  content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 10px !important;
+  top: 13px !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: var(--x-muted) !important;
+  -webkit-mask: var(--qu-i-default) center / contain no-repeat !important;
+  mask: var(--qu-i-default) center / contain no-repeat !important;
+}
+html.qu-x .findPageOverlay li a:hover,
+html.qu-x a.ac_even:hover,
+html.qu-x a.ac_odd:hover,
+html.qu-x .findPageOverlay li a.ac_over {
+  background: var(--x-surface-2) !important;
+  color: var(--x-ink) !important;
+  text-decoration: none !important;
+}
+html.qu-x .findPageOverlay strong {
+  font-weight: 600 !important;
+  color: var(--x-brand-text) !important;
+}
+
+/* ==========================================================================
+   5. PAGE HEAD — welcome / page title, crumb, and the search beside them
+   ========================================================================== */
+
+/* The head row is extension-owned DOM: the welcome, the crumb and the search
+   are siblings in the source with no common wrapper, so this puts the first
+   two in a left column with the search opposite. */
+html.qu-x .qu-headrow {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  max-width: 1440px !important;
+  margin-inline: auto !important;
+  padding: 28px 32px 0 !important;
+}
+html.qu-x .qu-headleft {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+html.qu-x .qu-headleft > #welcomemessage { order: 1 !important; }
+html.qu-x .qu-headleft > .qu-subtitle { order: 2 !important; }
+html.qu-x .qu-headleft > #crumb,
+html.qu-x .qu-headleft > .crumbs { order: 3 !important; }
+html.qu-x:not(.qu-home) .qu-headleft > #crumb,
+html.qu-x:not(.qu-home) .qu-headleft > .crumbs { order: 1 !important; margin: 0 !important; }
+
+
+/* The module row stays on drilled menus, between the crumb bar and the page
+   title, with the current module filled. */
+
+html.qu-x #welcomemessage,
+html.qu-x .qu-pagetitle {
+  font: var(--x-w-h1) 28px/1.25 var(--x-font-display) !important;
+  min-height: 0 !important;
+  color: var(--x-ink) !important;
+  letter-spacing: -0.01em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  text-align: start !important;
+}
+html.qu-x .qu-name {
+  color: var(--x-brand-text) !important;
+}
+/* The welcome greets you on the home grid; a drilled menu shows its own name
+   instead, taken from the breadcrumb. */
+html.qu-x:not(.qu-home) #welcomemessage,
+html.qu-x:not(.qu-home) .qu-subtitle {
+  display: none !important;
+}
+html.qu-x.qu-home .qu-pagetitle {
+  display: none !important;
+}
+html.qu-x .qu-pagetitle .qu-en {
+  display: block !important;
+  text-align: start !important;
+}
+html.qu-x .qu-pagetitle .qu-ar {
+  display: block !important;
+  text-align: start !important;
+  font: 700 24px/1.7 var(--x-font-ar) !important;
+  color: var(--x-ink) !important;
+}
+/* "to myBanner Self Service" — the tail of the server's own welcome string,
+   set as a subtitle. The diamond is the brand's rotated square, decoration
+   only; no server word is added or removed. */
+html.qu-x .qu-subtitle {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+  font: 400 14px/1.5 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x .qu-subtitle::before {
+  content: '' !important;
+  width: 6px !important;
+  height: 6px !important;
+  flex: none !important;
+  background: var(--x-brand) !important;
+  transform: rotate(45deg) !important;
+}
+
+html.qu-x #crumb {
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+html.qu-x .breadCrumb {
+  display: inline-flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 2px !important;
+  padding: 4px !important;
+  margin: 0 !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-pill) !important;
+  box-shadow: var(--x-shadow-card) !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  list-style: none !important;
+}
+/* Cascade leaves an empty crumb bar on pages with no trail; an empty
+   bordered pill is worse than no pill. */
+html.qu-x .breadCrumb:not(:has(a)) {
+  display: none !important;
+}
+html.qu-x .breadCrumb a {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 6px 12px !important;
+  font: 500 13px/1 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  border-radius: 999px !important;
+  text-decoration: none !important;
+  background: none !important;
+}
+html.qu-x .breadCrumb a:hover {
+  background: var(--x-surface-2) !important;
+  color: var(--x-ink) !important;
+  text-decoration: none !important;
+}
+html.qu-x .breadCrumb a:first-child::before {
+  content: '' !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex: none !important;
+  background: currentColor !important;
+  -webkit-mask: var(--qu-i-house) center / contain no-repeat !important;
+  mask: var(--qu-i-house) center / contain no-repeat !important;
+}
+html.qu-x .breadCrumb a.selected {
+  background: var(--x-brand-tint) !important;
+  color: var(--x-brand-text) !important;
+  font-weight: 600 !important;
+}
+html.qu-x .breadcrumbSeperator {
+  width: 12px !important;
+  height: 12px !important;
+  flex: none !important;
+  font-size: 0 !important;
+  color: transparent !important;
+  background: var(--x-muted) !important;
+  opacity: 0.55 !important;
+  -webkit-mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+  mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+}
+html.qu-x.qu-ar .breadcrumbSeperator {
+  transform: scaleX(-1) !important;
+}
+
+/* Info banner sits under the head row, full column width. */
+html.qu-x #pagebody .infotextdiv,
+html.qu-x .qu-menu .infotextdiv {
+  box-sizing: border-box !important;
+  max-width: 1440px !important;
+  margin: 20px auto 0 !important;
+  padding-inline: 32px !important;
+}
+
+
+
+/* The server ships its own breadcrumb (div.crumbs > span.links > a) as well
+   as Cascade's #crumb. It is the only crumb on a page Cascade has not
+   finished building, and on the anonymous landing, so it gets the same
+   crumb-bar treatment. */
+html.qu-x .crumbs {
+  display: inline-flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 2px !important;
+  box-sizing: border-box !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-pill) !important;
+  box-shadow: var(--x-shadow-card) !important;
+  font: 500 13px/1.3 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x .crumbs .links,
+html.qu-x .crumbs > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  background: none !important;
+}
+html.qu-x .crumbs a {
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  font: 500 13px/1 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  text-decoration: none !important;
+}
+html.qu-x .crumbs a:hover {
+  background: var(--x-surface-2) !important;
+  color: var(--x-ink) !important;
+  text-decoration: none !important;
+}
+html.qu-x .crumbs .lastValue {
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  background: var(--x-brand-tint) !important;
+  color: var(--x-brand-text) !important;
+  font-weight: 600 !important;
+}
+html.qu-x .crumbs .divider {
+  width: 12px !important;
+  height: 12px !important;
+  flex: none !important;
+  font-size: 0 !important;
+  color: transparent !important;
+  background: var(--x-muted) !important;
+  opacity: 0.55 !important;
+  -webkit-mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+  mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+}
+html.qu-x.qu-ar .crumbs .divider {
+  transform: scaleX(-1) !important;
+}
+
+/* Cascade's #crumb and the server's .crumbs say the same thing; only one
+   breadcrumb bar should survive. Specificity has to beat the .crumbs rule
+   above, not just come after it. */
+html.qu-x .crumbs[data-qu-crumb-dupe],
+html.qu-x [data-qu-crumb-dupe] {
+  display: none !important;
+}
+
+/* ==========================================================================
+   6. MENU PAGES — tiles, cards, level 3
+   ========================================================================== */
+
+html.qu-x #navigationcontrol {
+  /* the legacy sheet pulls this up with a -29px top margin, which lands it
+     on top of the crumb bar */
+  margin-block: 0 !important;
+  box-sizing: border-box !important;
+  max-width: 1440px !important;
+  margin-inline: auto !important;
+  padding: 20px 32px 0 !important;
+  background: none !important;
+  border: 0 !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+}
+html.qu-x .menucontainer {
+  display: block !important;
+  width: auto !important;
+  overflow: visible !important;
+}
+html.qu-x #menuTrackInst {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: auto !important;
+  align-items: stretch !important;
+}
+html.qu-x .menuitem {
+  display: block !important;
+  float: none !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+html.qu-x button.menubaseButton {
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  text-align: start !important;
+  border-radius: 0 !important;
+}
+
+/* --- Drilled menus: the carousel becomes a wrapping pill row ----------- */
+
+html.qu-x:not(.qu-home) .menubaseButton .menu {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  height: 36px !important;
+  padding: 8px 16px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+  background-image: none !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: var(--x-r-ctl) !important;
+  color: var(--x-ink) !important;
+  width: auto !important;
+  transition: background 0.15s var(--x-ease), color 0.15s var(--x-ease) !important;
+}
+html.qu-x:not(.qu-home) .menubaseButton .menu::before {
+  content: '' !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: none !important;
+  background: var(--x-brand-text) !important;
+  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+  mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+}
+html.qu-x:not(.qu-home) .menubaseButton .menu div {
+  background: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 6px !important;
+  height: auto !important;
+  width: auto !important;
+  text-align: start !important;
+}
+html.qu-x:not(.qu-home) .menubaseButton .menu div span {
+  font: 600 14px/1.2 var(--x-font-ui) !important;
+  color: inherit !important;
+  background: none !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: baseline !important;
+  gap: 6px !important;
+  text-align: start !important;
+}
+html.qu-x:not(.qu-home) .menubaseButton:hover .menu {
+  background: var(--x-brand-tint) !important;
+  background-color: var(--x-brand-tint) !important;
+}
+html.qu-x:not(.qu-home) .menubaseButton:focus-visible .menu {
+  outline: 2px solid var(--x-focus) !important;
+  outline-offset: 2px !important;
+}
+html.qu-x:not(.qu-home) .menubaseButton .menu.menuHighlight,
+html.qu-x:not(.qu-home) .menubaseButton.selected .menu,
+html.qu-x:not(.qu-home) .menuitem.selected .menubaseButton .menu,
+html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face {
+  background: var(--x-brand) !important;
+  background-color: var(--x-brand) !important;
+  color: var(--x-on-brand) !important;
+}
+html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face::before,
+html.qu-x:not(.qu-home) .menubaseButton .menu.menuHighlight::before {
+  background: var(--x-on-brand) !important;
+}
+html.qu-x:not(.qu-home) .descriptionText {
+  display: none !important;
+}
+
+/* --- Home: the five modules become the card grid ----------------------- */
+
+html.qu-x.qu-home #navigationcontrol {
+  padding: 24px 32px 40px !important;
+}
+html.qu-x.qu-home #menuTrackInst {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+  align-content: start !important;
+}
+html.qu-x.qu-home .menuitem {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-auto-rows: min-content !important;
+  align-content: start !important;
+  row-gap: 10px !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-card) !important;
+  box-shadow: var(--x-shadow-card) !important;
+  transition: border-color 0.15s var(--x-ease) !important;
+}
+html.qu-x.qu-home .menuitem:hover {
+  border-color: var(--x-brand-text) !important;
+}
+html.qu-x.qu-home .menubaseButton {
+  display: contents !important;
+}
+html.qu-x.qu-home .menubaseButton .menu {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 40px 1fr 16px !important;
+  column-gap: 12px !important;
+  align-items: center !important;
+  background: none !important;
+  background-image: none !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+/* chip and icon occupy the same grid cell, so the icon is centred by the
+   mask rather than by hand-positioned offsets */
+html.qu-x.qu-home .menubaseButton .menu::before {
+  content: '' !important;
+  grid-area: 1 / 1 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: var(--x-brand-tint) !important;
+}
+html.qu-x.qu-home .menubaseButton .menu::after {
+  content: '' !important;
+  grid-area: 1 / 1 !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: var(--x-brand-text) !important;
+  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
+  mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
+}
+html.qu-x[data-qux^='acm-'].qu-home .menubaseButton .menu::before {
+  border-radius: 0 !important;
+}
+html.qu-x.qu-home .menubaseButton .menu > div {
+  grid-area: 1 / 2 !important;
+  text-align: start !important;
+  background: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+}
+html.qu-x.qu-home .menubaseButton .menu > div > span {
+  display: block !important;
+  text-align: start !important;
+  font: var(--x-w-h3) 16px/1.3 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  background: none !important;
+  white-space: normal !important;
+}
+html.qu-x.qu-home .menubaseButton .menu > div > span .qu-en {
+  display: block !important;
+}
+html.qu-x.qu-home .menubaseButton .menu > div > span .qu-ar {
+  display: block !important;
+  font: 700 15px/1.7 var(--x-font-ar) !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x.qu-home .menubaseButton .menu > div::after {
+  content: '' !important;
+  position: absolute !important;
+  inset-inline-end: 0 !important;
+  top: 0 !important;
+  width: 16px !important;
+  height: 40px !important;
+  background: var(--x-muted) !important;
+  -webkit-mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
+  mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
+}
+html.qu-x.qu-home .descriptionText {
+  grid-column: 1 / -1 !important;
+  font: 400 13px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  max-width: none !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  display: block !important;
+}
+
+/* --- Level-2 card grid ------------------------------------------------- */
+
+html.qu-x.qu-menu #contentBelt.menucontent,
+html.qu-x.qu-menu #contentBelt {
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+  align-content: start !important;
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 20px 32px 40px !important;
+  background: none !important;
+}
+
+html.qu-x .htmlButtonLevel2-3 {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 40px 1fr 16px !important;
+  grid-auto-rows: min-content !important;
+  align-content: start !important;
+  column-gap: 12px !important;
+  row-gap: 10px !important;
+  align-items: center !important;
+  padding: 20px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  float: none !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-card) !important;
+  box-shadow: var(--x-shadow-card) !important;
+  cursor: pointer !important;
+  transition: border-color 0.15s var(--x-ease), box-shadow 0.15s var(--x-ease) !important;
+}
+html.qu-x .htmlButtonLevel2-3::before {
+  content: '' !important;
+  grid-area: 1 / 1 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: var(--x-brand-tint) !important;
+}
+html.qu-x .htmlButtonLevel2-3::after {
+  content: '' !important;
+  grid-area: 1 / 1 !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: var(--x-brand-text) !important;
+  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
+  mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
+  pointer-events: none !important;
+}
+html.qu-x[data-qux^='acm-'] .htmlButtonLevel2-3::before {
+  border-radius: 0 !important;
+}
+html.qu-x .htmlButtonLevel2-3 h3 {
+  grid-area: 1 / 2 !important;
+  font: var(--x-w-h3) 16px/1.3 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  display: block !important;
+}
+html.qu-x .htmlButtonLevel2-3 h3 .qu-en {
+  display: block !important;
+}
+html.qu-x .htmlButtonLevel2-3 h3 .qu-ar {
+  display: block !important;
+  font: 700 15px/1.7 var(--x-font-ar) !important;
+  color: var(--x-ink) !important;
+}
+/* Chevron only where the card actually opens a list. */
+html.qu-x .htmlButtonLevel2-3[data-qu-has-children] h3::after {
+  content: '' !important;
+  position: absolute !important;
+  inset-inline-end: 20px !important;
+  top: 20px !important;
+  width: 16px !important;
+  height: 40px !important;
+  background: var(--x-muted) !important;
+  -webkit-mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
+  mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
+  transition: transform 0.2s var(--x-ease) !important;
+}
+html.qu-x .htmlButtonLevel2-3.selected h3::after {
+  transform: rotate(180deg) !important;
+}
+html.qu-x .htmlButtonLevel2-3 p {
+  grid-column: 1 / -1 !important;
+  font: 400 13px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+html.qu-x .htmlButtonLevel2-3 p:lang(ar),
+html.qu-x .htmlButtonLevel2-3 .qu-ar-only {
+  font: 400 13px/1.9 var(--x-font-ar) !important;
+}
+/* Outbound destinations name their host on a badge instead of a chevron. */
+html.qu-x .qu-host-badge {
+  grid-column: 1 / -1 !important;
+  justify-self: start !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 12px !important;
+  border-radius: var(--x-r-pill) !important;
+  background: var(--x-brand-tint) !important;
+  border: 1px solid var(--x-brand-tint-border) !important;
+  font: 500 11.5px/1 var(--x-font-mono) !important;
+  color: var(--x-brand-text) !important;
+}
+html.qu-x .qu-host-badge::before {
+  content: '' !important;
+  width: 12px !important;
+  height: 12px !important;
+  flex: none !important;
+  background: var(--x-brand-text) !important;
+  -webkit-mask: var(--qu-i-link) center / contain no-repeat !important;
+  mask: var(--qu-i-link) center / contain no-repeat !important;
+}
+html.qu-x .htmlButtonLevel2-3:hover {
+  border-color: var(--x-brand-text) !important;
+}
+html.qu-x .htmlButtonLevel2-3:hover::before {
+  background: var(--x-brand) !important;
+}
+html.qu-x .htmlButtonLevel2-3:hover::after {
+  background: var(--x-on-brand) !important;
+}
+html.qu-x .htmlButtonLevel2-3:focus-visible {
+  outline: 2px solid var(--x-focus) !important;
+  outline-offset: 2px !important;
+}
+html.qu-x .htmlButtonLevel2-3.selected {
+  border: 2px solid var(--x-brand) !important;
+  background: var(--x-brand-tint) !important;
+  padding: 19px !important;
+}
+html.qu-x[data-qux^='acm-'] .htmlButtonLevel2-3.selected {
+  box-shadow: var(--x-shadow-pop) !important;
+}
+
+/* --- Level-3 panel ---------------------------------------------------- */
+
+html.qu-x #contentBelt > [id='level3Container'] {
+  grid-column: 1 / -1 !important;
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  float: none !important;
+}
+html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
+  display: block !important;
+  background: var(--x-brand-tint) !important;
+  border: 1px solid var(--x-brand-tint-border) !important;
+  border-radius: var(--x-r-area) !important;
+  padding: 8px !important;
+}
+html.qu-x #contentBelt ul.items {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 2px !important;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+html.qu-x #contentBelt ul.items > li {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+html.qu-x #contentBelt ul.items > li > a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+  border-radius: 6px !important;
+  background: none !important;
+  text-decoration: none !important;
+}
+html.qu-x #contentBelt ul.items > li > a::before {
+  content: '' !important;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none !important;
+  background: var(--x-brand-text) !important;
+  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+  mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+}
+html.qu-x #contentBelt ul.items > li > a:hover {
+  background: var(--x-surface) !important;
+  text-decoration: none !important;
+}
+html.qu-x #contentBelt ul.items h3 {
+  font: 500 14px/1.3 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  display: block !important;
+}
+html.qu-x #contentBelt ul.items h3 .qu-en {
+  display: block !important;
+}
+html.qu-x #contentBelt ul.items h3 .qu-ar {
+  display: block !important;
+  font: 700 13px/1.7 var(--x-font-ar) !important;
+  color: var(--x-ink) !important;
+}
+
+html.qu-x.qu-leaf #contentBelt[data-qu-belt-empty] {
+  display: none !important;
+}
+
+/* ==========================================================================
+   7. LEAF PAGES
+   ========================================================================== */
+
+/* Compact pill nav replaces the tile row on leaf pages. */
+html.qu-x #navigationcontrolSmall {
+  /* absolutely positioned in the legacy sheet, so it sat on top of the crumb
+     bar instead of above it */
+  position: static !important;
+  inset: auto !important;
+  padding-block: 12px !important;
+  background: none !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+  display: block !important;
+  height: auto !important;
+  width: auto !important;
+}
+html.qu-x button.menuSmallBaseButton {
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  height: auto !important;
+  width: auto !important;
+}
+html.qu-x .menuSmall {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: 32px !important;
+  padding: 8px 12px !important;
+  box-sizing: border-box !important;
+  background: none !important;
+  background-image: none !important;
+  border-radius: var(--x-r-pill) !important;
+  font: 500 13px/1 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  width: auto !important;
+  white-space: nowrap !important;
+}
+html.qu-x .menuSmall div {
+  background: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font: inherit !important;
+  color: inherit !important;
+  height: auto !important;
+  width: auto !important;
+}
+html.qu-x .menuSmallBaseButton:hover .menuSmall {
+  background: var(--x-surface-2) !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x .menuSmallHighlight {
+  background: var(--x-surface-2) !important;
+  color: var(--x-ink) !important;
+  font-weight: 600 !important;
+}
+html.qu-x .menuSmallBaseButton:focus-visible .menuSmall {
+  outline: 2px solid var(--x-focus) !important;
+  outline-offset: 2px !important;
+}
+
+/* Page title + identity block. The identity values are PII: styled, never
+   read, never logged, never persisted. */
+html.qu-x .staticheaders {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: end !important;
+  background: none !important;
+  border: 0 !important;
+  font: 400 12px/1.4 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  flex: none !important;
+}
+html.qu-x .qu-identity-who {
+  font: 600 13px/1.4 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x .qu-identity-id {
+  font-family: var(--x-font-mono) !important;
+  font-weight: 400 !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x .qu-identity-when {
+  font: 400 12px/1.4 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+
+/* Leaf heading and identity block share a row. */
+html.qu-x.qu-menu .qu-titlerow {
+  box-sizing: border-box !important;
+  display: block !important;
+  max-width: 1440px !important;
+  margin-inline: auto !important;
+  padding: 4px 32px 0 !important;
+}
+html.qu-x .qu-titlerow {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  flex-wrap: wrap !important;
+  max-width: 1440px !important;
+  margin-inline: auto !important;
+  padding: 16px 32px 0 !important;
+}
+html.qu-x .qu-titlerow .qu-pagetitle {
+  display: block !important;
+  min-width: 0 !important;
+}
+html.qu-x .staticheaders .rightaligntext,
+html.qu-x .rightaligntext {
+  font: 400 12px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  text-align: end !important;
+  margin: 0 !important;
+  flex: none !important;
+}
+
+/* --- Info / warning / error banners ----------------------------------- */
+
+html.qu-x .infotextdiv {
+  margin-block: 16px !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+}
+html.qu-x .infotexttable,
+html.qu-x table.infotexttable {
+  display: block !important;
+  width: 100% !important;
+  border: 1px solid var(--x-info-border) !important;
+  border-radius: var(--x-r-area) !important;
+  background: var(--x-info-bg) !important;
+  box-sizing: border-box !important;
+  border-collapse: separate !important;
+}
+html.qu-x .infotexttable tbody,
+html.qu-x .infotexttable tr {
+  display: block !important;
+}
+html.qu-x td.indefault {
+  display: block !important;
+  padding: 14px 16px !important;
+  background: none !important;
+  border: 0 !important;
+}
+/* The banner table has one cell holding only the legacy icon image and one
+   holding the message. enhance.js tags them by whether they carry any text,
+   because testing for an absent .infotext span would also hide banners whose
+   message is not wrapped in one. */
+html.qu-x td.indefault[data-qu-iconcell='1'] {
+  display: none !important;
+}
+/* a message cell with no .infotext span still needs the icon */
+html.qu-x td.indefault[data-qu-iconcell='0']:not(:has(.infotext)):not(:has(.informationtext)) {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  font: 400 14px/1.6 var(--x-font-ui) !important;
+  color: var(--x-info-text) !important;
+}
+html.qu-x
+  td.indefault[data-qu-iconcell='0']:not(:has(.infotext)):not(:has(.informationtext))::before {
+  content: '' !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: none !important;
+  margin-top: 1px !important;
+  background: var(--x-info-text) !important;
+  -webkit-mask: var(--qu-i-info) center / contain no-repeat !important;
+  mask: var(--qu-i-info) center / contain no-repeat !important;
+}
+html.qu-x td.indefault img {
+  display: none !important;
+}
+html.qu-x .infotext,
+html.qu-x .informationtext {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  font: 400 14px/1.6 var(--x-font-ui) !important;
+  color: var(--x-info-text) !important;
+  background: none !important;
+}
+html.qu-x .infotext::before,
+html.qu-x .informationtext::before {
+  content: '' !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: none !important;
+  margin-top: 1px !important;
+  background: var(--x-info-text) !important;
+  -webkit-mask: var(--qu-i-info) center / contain no-repeat !important;
+  mask: var(--qu-i-info) center / contain no-repeat !important;
+}
+
+html.qu-x .errortext,
+html.qu-x .warningtext {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 14px 16px !important;
+  margin-block: 12px !important;
+  border-radius: var(--x-r-area) !important;
+  font: 400 14px/1.6 var(--x-font-ui) !important;
+  border: 1px solid var(--x-error-border) !important;
+  background: var(--x-error-bg) !important;
+  color: var(--x-error-text) !important;
+}
+html.qu-x .warningtext {
+  border-color: var(--x-warn-border) !important;
+  background: var(--x-warn-bg) !important;
+  color: var(--x-warn-text) !important;
+}
+html.qu-x .errortext::before,
+html.qu-x .warningtext::before {
+  content: '' !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: none !important;
+  margin-top: 1px !important;
+  background: currentColor !important;
+  -webkit-mask: var(--qu-i-error) center / contain no-repeat !important;
+  mask: var(--qu-i-error) center / contain no-repeat !important;
+}
+html.qu-x .warningtext::before {
+  -webkit-mask-image: var(--qu-i-warn) !important;
+  mask-image: var(--qu-i-warn) !important;
+}
+html.qu-x .errortext img,
+html.qu-x .warningtext img {
+  display: none !important;
+}
+html.qu-x .fieldrequiredtext,
+html.qu-x .requiredmsgtext {
+  font: 400 13px/1.5 var(--x-font-ui) !important;
+  color: var(--x-error-text) !important;
+}
+html.qu-x .fieldOrangetextbold {
+  font: 600 13px/1.5 var(--x-font-ui) !important;
+  color: var(--x-warn-text) !important;
+}
+
+/* --- Layout tables: neutralised, they carry no meaning ---------------- */
+
+html.qu-x table.plaintable,
+html.qu-x table.plaintable > tbody,
+html.qu-x table.plaintable > tbody > tr,
+html.qu-x td.pldefault {
+  display: block !important;
+  width: auto !important;
+  border: 0 !important;
+  background: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+html.qu-x.qu-leaf .pagebodydiv {
+  padding-block: 20px 48px !important;
+  background: none !important;
+  border: 0 !important;
+}
+html.qu-x .pagebodydiv form {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* --- Form grid (dataentrytable) --------------------------------------- */
+
+html.qu-x table.dataentrytable {
+  display: block !important;
+  width: 100% !important;
+  max-width: 640px !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-area) !important;
+  background: var(--x-surface) !important;
+  padding: 20px !important;
+  margin-block: 16px !important;
+  box-sizing: border-box !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+html.qu-x table.dataentrytable > tbody {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+html.qu-x table.dataentrytable > tbody > tr {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+html.qu-x td.delabel,
+html.qu-x .fieldlabeltext {
+  font: 600 13px/1.4 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  text-align: start !important;
+  white-space: normal !important;
+}
+html.qu-x td.dedefault {
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+html.qu-x td.deseparator {
+  display: none !important;
+}
+html.qu-x .fieldlabeltextinvisible {
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* --- Controls --------------------------------------------------------- */
+
+html.qu-x input[type='text'],
+html.qu-x input[type='number'],
+html.qu-x input[type='email'],
+html.qu-x input[type='tel'],
+html.qu-x input[type='password'],
+html.qu-x select,
+html.qu-x textarea {
+  box-sizing: border-box !important;
+  min-height: 40px !important;
+  padding: 10px 14px !important;
+  font: 400 15px/1.3 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-border-strong) !important;
+  border-radius: var(--x-r-field) !important;
+  max-width: 100% !important;
+}
+html.qu-x textarea {
+  min-height: 64px !important;
+  border-radius: var(--x-r-area) !important;
+  resize: vertical !important;
+}
+html.qu-x select {
+  padding-inline-end: 34px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: var(--qu-i-chevron-down) !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 16px !important;
+}
+html.qu-x[dir='rtl'] select,
+html.qu-x.qu-ar select {
+  background-position: left 12px center !important;
+}
+html.qu-x input:focus-visible,
+html.qu-x select:focus-visible,
+html.qu-x textarea:focus-visible {
+  outline: 2px solid var(--x-brand-text) !important;
+  outline-offset: 1px !important;
+  border-color: var(--x-brand-text) !important;
+}
+html.qu-x input[type='checkbox'],
+html.qu-x input[type='radio'] {
+  width: 18px !important;
+  height: 18px !important;
+  min-height: 0 !important;
+  accent-color: var(--x-brand) !important;
+  margin-inline-end: 8px !important;
+  vertical-align: middle !important;
+}
+
+/* Buttons. The DOM is button.htmlButton > div.defaultButtonSmall > div > div,
+   with a sprite background — flatten the whole nest. */
+html.qu-x button.htmlButton,
+html.qu-x input[type='submit'],
+html.qu-x input[type='button'] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 40px !important;
+  padding: 10px 20px !important;
+  margin: 4px 8px 4px 0 !important;
+  font: 600 14px/1 var(--x-font-ui) !important;
+  color: var(--x-on-brand) !important;
+  background: var(--x-brand) !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: var(--x-r-ctl) !important;
+  cursor: pointer !important;
+  width: auto !important;
+  height: auto !important;
+  box-shadow: none !important;
+  transition: background 0.15s var(--x-ease) !important;
+}
+html.qu-x button.htmlButton:hover,
+html.qu-x input[type='submit']:hover {
+  background: var(--x-brand-hover) !important;
+}
+html.qu-x .defaultButtonSmall,
+html.qu-x .defaultButtonSmall div {
+  background: none !important;
+  background-image: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: auto !important;
+  width: auto !important;
+  font: inherit !important;
+  color: inherit !important;
+  display: block !important;
+  white-space: nowrap !important;
+}
+/* The menu tiles are also button.htmlButton — do not paint them as buttons. */
+html.qu-x button.htmlButton.menubaseButton,
+html.qu-x button.htmlButton.menuSmallBaseButton {
+  background: none !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* --- Data tables ------------------------------------------------------ */
+
+html.qu-x table.datadisplaytable,
+html.qu-x .pagebodydiv table[data-qu-bare] {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin-block: 8px 28px !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-area) !important;
+  overflow: hidden !important;
+  font: 400 14px/1.5 var(--x-font-ui) !important;
+}
+html.qu-x caption.captiontext {
+  caption-side: top !important;
+  text-align: start !important;
+  font: var(--x-w-h3) 17px/1.35 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  font-style: normal !important;
+  padding: 0 0 8px !important;
+  margin-block: 24px 0 !important;
+  position: relative !important;
+}
+html.qu-x caption.captiontext::after {
+  content: '' !important;
+  display: block !important;
+  width: 32px !important;
+  height: 3px !important;
+  margin-top: 8px !important;
+  background: var(--x-brand-text) !important;
+}
+html.qu-x th.ddheader {
+  font: 600 12px/1.4 var(--x-font-ui) !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--x-muted) !important;
+  background: var(--x-surface-2) !important;
+  text-align: start !important;
+  padding: 12px 14px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+}
+html.qu-x th.ddheader a {
+  color: inherit !important;
+}
+/* th.ddtitle — the section banner row inside a datadisplaytable, and the only
+   thing that sections the 123-row Academic Transcript. Styling it is how that
+   page gets its sections without any DOM surgery. The site paints it tan
+   (#e1ccb5 on #703d00). */
+html.qu-x th.ddtitle {
+  font: 600 13px/1.4 var(--x-font-ui) !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--x-brand-text) !important;
+  background: var(--x-brand-tint) !important;
+  text-align: start !important;
+  padding: 14px !important;
+  border: 0 !important;
+  border-top: 2px solid var(--x-brand-tint-border) !important;
+  border-bottom: 1px solid var(--x-brand-tint-border) !important;
+}
+html.qu-x th.ddtitle a {
+  color: inherit !important;
+}
+
+html.qu-x th.ddlabel {
+  font: 600 13px/1.5 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  background: none !important;
+  text-align: start !important;
+  vertical-align: top !important;
+  padding: 12px 14px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+  white-space: normal !important;
+  width: 34% !important;
+}
+html.qu-x td.dddefault {
+  font: 400 14px/1.55 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  background: none !important;
+  padding: 12px 14px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+  vertical-align: top !important;
+}
+html.qu-x table.datadisplaytable tr:last-child > th,
+html.qu-x table.datadisplaytable tr:last-child > td {
+  border-bottom: 0 !important;
+}
+html.qu-x table.datadisplaytable[data-qu-table='grid'] tbody tr:hover > td.dddefault {
+  background: var(--x-surface-2) !important;
+}
+html.qu-x td.ddseparator {
+  padding: 0 !important;
+  height: 1px !important;
+  background: var(--x-hairline) !important;
+  border: 0 !important;
+  font-size: 0 !important;
+}
+/* Numeric columns read better tabular and end-aligned. */
+html.qu-x td.dddefault.qu-num,
+html.qu-x td.dddefault[align='right'] {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--x-font-mono) !important;
+  text-align: end !important;
+}
+html.qu-x .centeraligntext { text-align: center !important; }
+html.qu-x .leftaligntext { text-align: start !important; }
+
+/* Tabs — the portal's only tab set (Account Information / Account Detail),
+   marked up as td.bgtabon / td.bgtaboff. Underline style: the strip sits on a
+   hairline and the active tab carries a 3px brand bar with a 1.5px radius. */
+html.qu-x tr:has(> td.bgtabon),
+html.qu-x tr:has(> td.bgtaboff) {
+  border-bottom: 1px solid var(--x-hairline) !important;
+}
+html.qu-x td.bgtabon,
+html.qu-x td.bgtaboff,
+html.qu-x .tabon,
+html.qu-x .taboff {
+  position: relative !important;
+  display: inline-block !important;
+  padding: 10px 4px 13px !important;
+  margin-inline-end: 24px !important;
+  background: none !important;
+  background-image: none !important;
+  border: 0 !important;
+  font: 600 14px/1 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  cursor: pointer !important;
+}
+html.qu-x td.bgtabon a,
+html.qu-x td.bgtaboff a,
+html.qu-x .tabon a,
+html.qu-x .taboff a {
+  color: inherit !important;
+  font: inherit !important;
+  text-decoration: none !important;
+}
+html.qu-x td.bgtaboff:hover,
+html.qu-x .taboff:hover {
+  color: var(--x-ink) !important;
+}
+html.qu-x td.bgtabon,
+html.qu-x .tabon {
+  color: var(--x-ink) !important;
+}
+html.qu-x td.bgtabon::after,
+html.qu-x .tabon::after {
+  content: '' !important;
+  position: absolute !important;
+  inset-inline: 0 !important;
+  bottom: 0 !important;
+  height: 3px !important;
+  border-radius: 1.5px !important;
+  background: var(--x-brand-text) !important;
+}
+/* the tab images the legacy sheet uses for the rounded corners */
+html.qu-x td.bgtabon img,
+html.qu-x td.bgtaboff img,
+html.qu-x img.headerImg {
+  display: none !important;
+}
+
+/* Site map tree */
+/* Site map: a real tree. The server emits a flat run of anchors whose only
+   structure is the level in their class name. */
+html.qu-x a.sitemaplevel1,
+html.qu-x a.sitemaplevel2,
+html.qu-x a.sitemaplevel3 {
+  display: block !important;
+  text-decoration: none !important;
+  border-radius: 6px !important;
+}
+html.qu-x a.sitemaplevel1 {
+  font: 600 17px/1.4 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  margin: 28px 0 4px !important;
+  padding: 6px 0 !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+}
+html.qu-x a.sitemaplevel2 {
+  font: 500 14px/1.5 var(--x-font-ui) !important;
+  color: var(--x-link) !important;
+  padding: 7px 10px !important;
+  margin-inline-start: 8px !important;
+}
+html.qu-x a.sitemaplevel3 {
+  font: 400 13px/1.5 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  padding: 6px 10px !important;
+  margin-inline-start: 28px !important;
+  position: relative !important;
+}
+html.qu-x a.sitemaplevel3::before {
+  content: '' !important;
+  position: absolute !important;
+  inset-inline-start: -10px !important;
+  top: 50% !important;
+  width: 10px !important;
+  height: 1px !important;
+  background: var(--x-hairline) !important;
+}
+html.qu-x a.sitemaplevel2:hover,
+html.qu-x a.sitemaplevel3:hover {
+  background: var(--x-surface-2) !important;
+  color: var(--x-ink) !important;
+  text-decoration: none !important;
+}
+
+/* ==========================================================================
+   7b. ACADEMIC TRANSCRIPT
+   One table, 123 rows. Sectioning is CSS on row classes plus display:grid on
+   the rows themselves: the table comes out of table layout and each row
+   becomes a grid whose template matches its role. The cell counts line up
+   exactly — 9 columns for a course row, 7 for a totals row, 2 for key/value.
+   ========================================================================== */
+
+html.qu-x.qu-transcript .pagebodydiv.qu-has-rail {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 32px !important;
+}
+html.qu-x .qu-transcript-main {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+html.qu-x [data-qu-anchor-dupe] {
+  display: none !important;
+}
+
+/* --- the rail ---------------------------------------------------------- */
+
+html.qu-x .qu-rail {
+  flex: 0 0 240px !important;
+  position: sticky !important;
+  top: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  max-height: calc(100vh - 32px) !important;
+  overflow-y: auto !important;
+}
+html.qu-x .qu-rail-title {
+  font: 600 11px/1 var(--x-font-ui) !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--x-muted) !important;
+  padding: 8px 12px !important;
+}
+html.qu-x .qu-rail-link {
+  display: block !important;
+  padding: 7px 12px !important;
+  border-radius: 6px !important;
+  font: 500 12.5px/1.3 var(--x-font-ui) !important;
+  color: var(--x-body) !important;
+  text-decoration: none !important;
+}
+html.qu-x .qu-rail-link[data-qu-level='2'] {
+  padding-inline-start: 26px !important;
+  font-weight: 400 !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x .qu-rail-link:hover {
+  background: var(--x-surface-2) !important;
+  color: var(--x-ink) !important;
+  text-decoration: none !important;
+}
+html.qu-x .qu-print {
+  margin-top: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 11px 16px !important;
+  font: 600 13.5px/1 var(--x-font-ui) !important;
+  color: var(--x-on-brand) !important;
+  background: var(--x-brand) !important;
+  border: 0 !important;
+  border-radius: var(--x-r-ctl) !important;
+  cursor: pointer !important;
+}
+html.qu-x .qu-print::before {
+  content: '' !important;
+  width: 15px !important;
+  height: 15px !important;
+  background: var(--x-on-brand) !important;
+  -webkit-mask: var(--qu-i-printer) center / contain no-repeat !important;
+  mask: var(--qu-i-printer) center / contain no-repeat !important;
+}
+html.qu-x .qu-print:hover {
+  background: var(--x-brand-hover) !important;
+}
+html.qu-x .qu-rail-note {
+  font: 400 11.5px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  padding: 12px 4px 0 !important;
+}
+
+/* --- out of table layout, into grid rows -------------------------------- */
+
+html.qu-x.qu-transcript table[data-qu-transcript],
+html.qu-x.qu-transcript table[data-qu-transcript] > tbody {
+  display: block !important;
+  width: auto !important;
+  border: 0 !important;
+  background: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  margin: 0 !important;
+}
+html.qu-x.qu-transcript table[data-qu-transcript] tr {
+  display: block !important;
+}
+html.qu-x.qu-transcript table[data-qu-transcript] th,
+html.qu-x.qu-transcript table[data-qu-transcript] td {
+  display: block !important;
+  border: 0 !important;
+  width: auto !important;
+  vertical-align: baseline !important;
+}
+
+/* course rows and their header share the same nine columns */
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='header'],
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='data'][data-qu-term] {
+  display: grid !important;
+  grid-template-columns: 0.9fr 0.8fr 1.9fr 0.6fr 3fr 0.7fr 1.1fr 1.2fr 0.5fr !important;
+  align-items: baseline !important;
+}
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='totals'],
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='totals-header'] {
+  display: grid !important;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr 1.1fr 0.9fr !important;
+  align-items: baseline !important;
+}
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='kv'] {
+  display: grid !important;
+  grid-template-columns: 180px 1fr !important;
+  gap: 12px !important;
+}
+
+html.qu-x.qu-transcript table[data-qu-transcript] > caption.captiontext {
+  display: block !important;
+  width: auto !important;
+  text-align: start !important;
+}
+
+/* --- section headings sit between the cards ----------------------------- */
+
+html.qu-x.qu-transcript tr[data-qu-row='section'] {
+  clear: both !important;
+  padding: 22px 2px 8px !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='section'] > th.ddtitle {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  font: var(--x-w-h2) 15px/1.3 var(--x-font-ui) !important;
+  letter-spacing: 0.06em !important;
+  text-transform: none !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='section'] > th.ddtitle::before {
+  content: '' !important;
+  width: 8px !important;
+  height: 8px !important;
+  flex: none !important;
+  background: var(--x-brand-text) !important;
+  transform: rotate(45deg) !important;
+}
+/* the server's "-Top-" back-link is kept, just quietened */
+html.qu-x.qu-transcript th.ddtitle a {
+  display: inline !important;
+  font: 400 12px/1.4 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  text-decoration: none !important;
+}
+
+/* --- preamble card headings ---
+   A heading inside a preamble card is that card's header, so it drops the
+   diamond and takes the header type; the <tbody> draws the surface and the
+   rule under it. Keyed on being inside a card rather than on :first-of-type —
+   once the cards became real tbodies every heading was first of its type, and
+   INSTITUTION CREDIT, which is a signpost and not a card, was drawn as one. */
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='section'] > th.ddtitle {
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  font: var(--x-w-h3) 17px/1.3 var(--x-font-ui) !important;
+  letter-spacing: 0 !important;
+}
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='section'] > th.ddtitle::before {
+  content: none !important;
+}
+
+/* key/value rows sit two-up inside the card */
+html.qu-x.qu-transcript tr[data-qu-row='kv']:not([data-qu-term]) {
+  float: inline-start !important;
+  width: calc(50% - 0.5px) !important;
+  box-sizing: border-box !important;
+  background: var(--x-surface) !important;
+  border-inline: 1px solid var(--x-hairline) !important;
+  padding: 7px 20px !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='kv']:not([data-qu-term]) > th.ddlabel {
+  font: 600 13px/1.5 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  padding: 0 !important;
+  background: none !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='kv']:not([data-qu-term]) > td.dddefault {
+  font: 400 14px/1.5 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  padding: 0 !important;
+  background: none !important;
+}
+/* a lone full-width value row inside the same card */
+html.qu-x.qu-transcript tr[data-qu-row='data']:not([data-qu-term]) {
+  clear: both !important;
+  background: var(--x-surface) !important;
+  border-inline: 1px solid var(--x-hairline) !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+  padding: 7px 20px !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data']:not([data-qu-term]) > td {
+  font: 400 14px/1.5 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+/* --- term cards --------------------------------------------------------- */
+
+html.qu-x.qu-transcript tr[data-qu-term] {
+  background: var(--x-surface) !important;
+  border-inline: 1px solid var(--x-hairline) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='term'] {
+  clear: both !important;
+  margin-top: 16px !important;
+  border-top: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-card) var(--x-r-card) 0 0 !important;
+  box-shadow: var(--x-shadow-card) !important;
+  padding: 12px 20px !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='term'] > th.ddlabel,
+html.qu-x.qu-transcript tr[data-qu-row='term'] > td.dddefault {
+  padding: 0 !important;
+  background: none !important;
+  font: var(--x-w-h3) 16px/1.3 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x .qu-term-head {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+html.qu-x .qu-term-meta {
+  font: 400 12.5px/1.5 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x .qu-term-badges {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  margin-inline-start: auto !important;
+}
+html.qu-x .qu-badge {
+  display: inline-flex !important;
+  padding: 4px 10px !important;
+  border-radius: var(--x-r-pill) !important;
+  font: 600 11.5px/1.35 var(--x-font-ui) !important;
+  background: var(--x-ok-bg) !important;
+  color: var(--x-ok-text) !important;
+  border: 1px solid var(--x-ok-border) !important;
+}
+html.qu-x .qu-badge[data-qu-badge='honor'] {
+  background: var(--x-brand-tint) !important;
+  color: var(--x-brand-text) !important;
+  border-color: var(--x-brand-tint-border) !important;
+}
+html.qu-x .qu-badge[data-qu-badge='warn'] {
+  background: var(--x-warn-bg) !important;
+  color: var(--x-warn-text) !important;
+  border-color: var(--x-warn-border) !important;
+}
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-meta-folded],
+html.qu-x.qu-transcript table[data-qu-transcript] [data-qu-spanned],
+html.qu-x [data-qu-spanned] {
+  display: none !important;
+}
+
+/* course column headers */
+html.qu-x.qu-transcript tr[data-qu-row='totals-header'] > th.ddheader,
+html.qu-x.qu-transcript tr[data-qu-row='header'] > th.ddheader {
+  background: none !important;
+  position: static !important;
+  padding: 9px 14px !important;
+  font: 600 11.5px/1 var(--x-font-ui) !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: var(--x-muted) !important;
+  text-align: start !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='totals-header'] > th.ddheader {
+  text-align: end !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='header'] > th.ddheader:nth-child(7),
+html.qu-x.qu-transcript tr[data-qu-row='header'] > th.ddheader:nth-child(8) {
+  text-align: end !important;
+}
+
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='data'] > td.dddead,
+html.qu-x.qu-transcript table[data-qu-transcript] td.ddseparator {
+  display: none !important;
+}
+
+/* course rows */
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] {
+  border-bottom: 1px solid var(--x-hairline) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term]:hover {
+  background: var(--x-surface-2) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] > td {
+  padding: 9px 14px !important;
+  font: 400 13px/1.5 var(--x-font-mono) !important;
+  color: var(--x-body) !important;
+  background: none !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] > td:nth-child(1) {
+  font: 600 13px/1.5 var(--x-font-ui) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] > td:nth-child(3) {
+  font: 400 12.5px/1.5 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] > td:nth-child(5) {
+  font: 400 13.5px/1.5 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] > td:nth-child(6) {
+  font: 700 13px/1.5 var(--x-font-mono) !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] > td:nth-child(7),
+html.qu-x.qu-transcript tr[data-qu-row='data'][data-qu-term] > td:nth-child(8) {
+  text-align: end !important;
+}
+
+/* term totals */
+html.qu-x.qu-transcript tr[data-qu-row='totals-title'] {
+  padding: 10px 20px 4px !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='totals-title'] > th.ddtitle {
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  font: 600 12.5px/1 var(--x-font-ui) !important;
+  letter-spacing: 0.05em !important;
+  text-transform: none !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='totals-title'] > th.ddtitle::before {
+  content: none !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='totals'] > th.ddlabel,
+html.qu-x.qu-transcript tr[data-qu-row='totals'] > td.dddefault {
+  padding: 8px 12px !important;
+  font: 400 13px/1.5 var(--x-font-mono) !important;
+  color: var(--x-body) !important;
+  background: none !important;
+  text-align: end !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='totals'] > th.ddlabel {
+  font: 600 13px/1.5 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  text-align: start !important;
+}
+html.qu-x.qu-transcript tr[data-qu-row='totals']:last-of-type {
+  border-bottom: 1px solid var(--x-hairline) !important;
+  border-radius: 0 0 var(--x-r-card) var(--x-r-card) !important;
+  margin-bottom: 4px !important;
+}
+
+/* the repeated watermark and blank spacer rows are screen noise */
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='watermark'],
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='spacer'],
+html.qu-x tr[data-qu-row='watermark'],
+html.qu-x tr[data-qu-row='spacer'] {
+  display: none !important;
+}
+
+/* Empty state. A message with no data beside it is not
+   feedback about an action — it is "there is nothing here", and the design
+   draws it centred with a 56px chip. Two pseudo-elements, because one cannot
+   be both a filled circle and a masked glyph: ::before is the chip, ::after
+   is the icon laid over it. */
+html.qu-x [data-qu-state='empty'] {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 16px !important;
+  max-width: 340px !important;
+  margin: 56px auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  text-align: center !important;
+  font: 400 15px/1.6 var(--x-font-ui) !important;
+  color: var(--x-body) !important;
+}
+html.qu-x [data-qu-state='empty']::before {
+  content: '' !important;
+  width: 56px !important;
+  height: 56px !important;
+  margin: 0 !important;
+  flex: none !important;
+  border-radius: 50% !important;
+  background: var(--x-warn-bg) !important;
+  border: 1px solid var(--x-warn-border) !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+html.qu-x [data-qu-state='empty']::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 15px !important;
+  width: 26px !important;
+  height: 26px !important;
+  background: var(--x-warn-text) !important;
+  -webkit-mask: var(--qu-i-warn) center / contain no-repeat !important;
+  mask: var(--qu-i-warn) center / contain no-repeat !important;
+}
+html.qu-x .errortext[data-qu-state='empty']::before {
+  background: var(--x-error-bg) !important;
+  border-color: var(--x-error-border) !important;
+}
+html.qu-x .errortext[data-qu-state='empty']::after {
+  background: var(--x-error-text) !important;
+  -webkit-mask-image: var(--qu-i-error) !important;
+  mask-image: var(--qu-i-error) !important;
+}
+/* The follow-on halves of the same empty state: same centred text, no second
+   chip. */
+html.qu-x [data-qu-state='empty-more'] {
+  display: block !important;
+  max-width: 340px !important;
+  margin: -40px auto 56px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  text-align: center !important;
+  font: 400 14px/1.7 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x [data-qu-state='empty-more']::before,
+html.qu-x [data-qu-state='empty-more']::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ==========================================================================
+   8. FOOTER
+   ========================================================================== */
+
+html.qu-x #pagefooter {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+}
+html.qu-x .qu-attrib {
+  margin-inline-start: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+html.qu-x .qu-attrib-text {
+  font: 400 12px/1 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x .qu-attrib-mark {
+  font: 800 13px/1 var(--x-font-display) !important;
+  color: var(--x-ink) !important;
+  white-space: nowrap !important;
+}
+html.qu-x .reltext {
+  display: inline !important;
+  text-transform: none !important;
+  font: 400 12px/1 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x .sitemaplink {
+  display: inline !important;
+}
+html.qu-x #pagefooter,
+html.qu-x #globalFooter,
+html.qu-x .disclaimer {
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 20px 24px !important;
+  box-sizing: border-box !important;
+  font: 400 12px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  background: none !important;
+  border-top: 1px solid var(--x-hairline) !important;
+  text-align: start !important;
+}
+html.qu-x .disclaimer h5 {
+  font: 400 12px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+  margin: 0 !important;
+}
+html.qu-x .sitemaplink a {
+  font: 500 12px/1.6 var(--x-font-ui) !important;
+  color: var(--x-link) !important;
+  text-transform: none !important;
+}
+html.qu-x .lastaccess {
+  color: var(--x-muted) !important;
+}
+
+/* ==========================================================================
+   9. ANONYMOUS LANDING + SIGN-IN
+   ========================================================================== */
+
+/* The public landing page. Banner ships these six links
+   inside a display:none .pagebodydiv, so the page is blank on QU's own site;
+   enhance.js lifts them into #pagebody as cards. */
+html.qu-x .qu-public-heading {
+  max-width: 1440px !important;
+  margin: 28px auto 0 !important;
+  padding: 0 32px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  font: var(--x-w-h1) 28px/1.25 var(--x-font-display) !important;
+  letter-spacing: -0.01em !important;
+  color: var(--x-ink) !important;
+}
+html.qu-x .qu-public {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  max-width: 1440px !important;
+  margin: 24px auto 48px !important;
+  padding: 0 32px !important;
+  box-sizing: border-box !important;
+}
+html.qu-x .qu-public-card {
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  text-align: start !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-card) !important;
+  box-shadow: var(--x-shadow-card) !important;
+  text-decoration: none !important;
+}
+/* Entering the secure area is the page's one real job. */
+html.qu-x .qu-public-card[data-qu-primary] {
+  border: 2px solid var(--x-brand) !important;
+}
+html.qu-x .qu-public-card:hover {
+  border-color: var(--x-brand-text) !important;
+  text-decoration: none !important;
+}
+html.qu-x .qu-public-shot {
+  display: block !important;
+  width: 100% !important;
+  height: 104px !important;
+  object-fit: cover !important;
+  flex: none !important;
+}
+html.qu-x .qu-public-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  flex: 1 !important;
+  padding: 18px 20px 20px !important;
+}
+html.qu-x .qu-public-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+html.qu-x .qu-public-chip {
+  width: 40px !important;
+  height: 40px !important;
+  flex: none !important;
+  border-radius: 50% !important;
+  background: var(--x-brand) !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  position: relative !important;
+}
+html.qu-x .qu-public-chip::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 10px !important;
+  background: var(--x-on-brand) !important;
+  -webkit-mask: var(--qu-icon) center / contain no-repeat !important;
+  mask: var(--qu-icon) center / contain no-repeat !important;
+}
+html.qu-x .qu-public-title {
+  flex: 1 !important;
+  min-width: 0 !important;
+  font: var(--x-w-h3) 16px/1.3 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  display: block !important;
+}
+html.qu-x .qu-public-title .qu-en,
+html.qu-x .qu-public-title .qu-ar {
+  display: block !important;
+}
+html.qu-x .qu-public-title .qu-ar {
+  font: 700 15px/1.7 var(--x-font-ar) !important;
+}
+html.qu-x .qu-public-desc {
+  font: 400 13px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+/* The arrow marks a link that leaves the portal. It has to be inline with the
+   title text, so it hangs off the description rather than off the title —
+   which stacks its EN and AR halves and would drop the arrow onto its own row. */
+html.qu-x .qu-public-card[data-qu-external] .qu-public-desc::after {
+  content: '' !important;
+  width: 12px !important;
+  height: 12px !important;
+  display: inline-block !important;
+  margin-inline-start: 6px !important;
+  vertical-align: -1px !important;
+  background: var(--x-muted) !important;
+  -webkit-mask: var(--qu-i-external) center / contain no-repeat !important;
+  mask: var(--qu-i-external) center / contain no-repeat !important;
+}
+
+/* Sign-in pages share the leaf vocabulary; only the frame is centred.
+   The extension never prefills, reads or submits a credential field. */
+html.qu-x.qu-anon.qu-leaf .pagebodydiv > form {
+  max-width: 440px !important;
+  margin: 40px auto !important;
+  padding: 28px !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-area) !important;
+  box-shadow: var(--x-shadow-pop) !important;
+  box-sizing: border-box !important;
+}
+html.qu-x.qu-anon.qu-leaf table.dataentrytable {
+  border: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  max-width: none !important;
+}
+html.qu-x .globalfooterdiv,
+html.qu-x .pagefooterdiv,
+html.qu-x .headerlinksdiv,
+html.qu-x .pageheaderlinks2,
+html.qu-x #pageheaderlinks {
+  position: static !important;
+  inset: auto !important;
+  background: none !important;
+  border: 0 !important;
+}
+html.qu-x .releasetext {
+  font: 400 12px/1.6 var(--x-font-ui) !important;
+  color: var(--x-muted) !important;
+}
+
+/* ==========================================================================
+   10. EXTENSION-OWNED NOTICES
+   ========================================================================== */
+
+html.qu-x .qu-notice {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 14px !important;
+  margin: 48px auto !important;
+  padding: 24px !important;
+  max-width: 640px !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-area) !important;
+  box-shadow: var(--x-shadow-card) !important;
+  box-sizing: border-box !important;
+}
+html.qu-x .qu-notice-text {
+  min-width: 0 !important;
+}
+html.qu-x .qu-notice-icon {
+  width: 22px !important;
+  height: 22px !important;
+  flex: none !important;
+  margin-top: 2px !important;
+  background: var(--x-brand-text) !important;
+  -webkit-mask: var(--qu-icon) center / contain no-repeat !important;
+  mask: var(--qu-icon) center / contain no-repeat !important;
+}
+html.qu-x .qu-notice h2 {
+  font: var(--x-w-h2) 19px/1.35 var(--x-font-display) !important;
+  color: var(--x-ink) !important;
+  margin: 0 0 6px !important;
+}
+html.qu-x .qu-notice p {
+  font: 400 14px/1.65 var(--x-font-ui) !important;
+  color: var(--x-body) !important;
+  margin: 0 !important;
+}
+html.qu-x .qu-notice-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 40px !important;
+  margin-top: 16px !important;
+  padding: 10px 20px !important;
+  font: 600 14px/1 var(--x-font-ui) !important;
+  color: var(--x-on-brand) !important;
+  background: var(--x-brand) !important;
+  border-radius: var(--x-r-ctl) !important;
+  text-decoration: none !important;
+}
+html.qu-x .qu-notice-action:hover {
+  background: var(--x-brand-hover) !important;
+  color: var(--x-on-brand) !important;
+  text-decoration: none !important;
+}
+/* The ORDS 500 page is an Oracle JET document with none of the Banner chrome. */
+html.qu-x.qu-ords body {
+  background: var(--x-page) !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   11. HELP OVERLAY
+   ========================================================================== */
+
+/* While closed the site parks #helpWindow off-screen (top:-344px) rather than
+   hiding it, so painting the OUTER box makes its bottom edge bleed into the
+   viewport. Paint the inner parts instead and collapse the sprite tails. */
+html.qu-x #helpWindow {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+html.qu-x #helpWindowTop,
+html.qu-x #helpWindowBottom {
+  background-image: none !important;
+  background: none !important;
+  border: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+html.qu-x #helpWindowMiddle {
+  background-image: none !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-top: 0 !important;
+  box-shadow: var(--x-shadow-overlay) !important;
+}
+html.qu-x #helpWindowControls {
+  background-image: none !important;
+  border: 0 !important;
+}
+html.qu-x #helpWindowControls {
+  background: var(--x-brand) !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  gap: 8px !important;
+}
+html.qu-x #helpWindowTitle {
+  font: 600 15px/1.3 var(--x-font-ui) !important;
+  color: var(--x-on-brand) !important;
+}
+html.qu-x #helpWindowTabText,
+html.qu-x #helpWindowTab {
+  display: none !important;
+}
+
+/* ==========================================================================
+   12. RTL — the عربي switch mirrors the whole layout
+   ========================================================================== */
+
+html.qu-x.qu-ar {
+  direction: rtl !important;
+}
+html.qu-x.qu-ar body {
+  direction: rtl !important;
+  text-align: start !important;
+}
+html.qu-x.qu-ar .qu-en {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+}
+html.qu-x.qu-ar .qu-ar {
+  direction: rtl !important;
+  unicode-bidi: isolate !important;
+}
+/* Data values keep their own direction regardless of UI language. */
+html.qu-x.qu-ar td.dddefault,
+html.qu-x.qu-ar th.ddlabel {
+  unicode-bidi: plaintext !important;
+}
+html.qu-x.qu-ar .staticheaders,
+html.qu-x.qu-ar #welcomemessage,
+html.qu-x.qu-ar .qu-notice h2 {
+  font-family: var(--x-font-ar) !important;
+  font-size: 24px !important;
+  line-height: 1.7 !important;
+}
+html.qu-x.qu-ar .infotext,
+html.qu-x.qu-ar .errortext,
+html.qu-x.qu-ar .warningtext,
+html.qu-x.qu-ar td.dddefault {
+  font-family: var(--x-font-ar) !important;
+  font-size: 13px !important;
+  line-height: 1.9 !important;
+}
+
+/* ==========================================================================
+   13. RESPONSIVE — the site is unusable below ~1100px today
+   ========================================================================== */
+
+@media (max-width: 1100px) {
+  html.qu-x #header {
+    flex-wrap: wrap !important;
+    height: auto !important;
+    min-height: 64px !important;
+    padding: 10px 16px !important;
+  }
+  html.qu-x #search {
+    order: 3 !important;
+    width: 100% !important;
+  }
+  html.qu-x #pageheader,
+  html.qu-x #pagebody,
+  html.qu-x #contentBelt,
+  html.qu-x .staticheaders,
+  html.qu-x #crumb,
+  html.qu-x .pagebodydiv,
+  html.qu-x #navigationcontrolSmall,
+  html.qu-x #navigationcontrol,
+  html.qu-x #welcomemessage,
+  html.qu-x .qu-public {
+    padding-inline: 16px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html.qu-x #welcomemessage,
+  html.qu-x .staticheaders {
+    font-size: 22px !important;
+  }
+  html.qu-x #contentBelt,
+  html.qu-x #contentBelt.menucontent {
+    grid-template-columns: 1fr !important;
+  }
+  html.qu-x #navigationcontrol .menucontainer {
+    overflow-x: auto !important;
+  }
+  html.qu-x .breadCrumb {
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  html.qu-x .staticheaders {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  html.qu-x .rightaligntext {
+    text-align: start !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Key/value tables become stacked pairs; grids scroll inside their frame. */
+  html.qu-x table.datadisplaytable[data-qu-table='kv'],
+  html.qu-x table.datadisplaytable[data-qu-table='kv'] tbody,
+  html.qu-x table.datadisplaytable[data-qu-table='kv'] tr {
+    display: block !important;
+  }
+  html.qu-x table.datadisplaytable[data-qu-table='kv'] th.ddlabel,
+  html.qu-x table.datadisplaytable[data-qu-table='kv'] td.dddefault {
+    display: block !important;
+    width: auto !important;
+    border-bottom: 0 !important;
+    padding: 2px 14px !important;
+  }
+  html.qu-x table.datadisplaytable[data-qu-table='kv'] th.ddlabel {
+    padding-top: 12px !important;
+  }
+  html.qu-x table.datadisplaytable[data-qu-table='kv'] tr {
+    border-bottom: 1px solid var(--x-hairline) !important;
+    padding-bottom: 10px !important;
+  }
+  html.qu-x table.datadisplaytable[data-qu-table='grid'] {
+    display: block !important;
+    overflow-x: auto !important;
+  }
+  html.qu-x .qu-switch .qu-seg:first-child { display: none !important; }
+}
+
+/* ==========================================================================
+   14. PRINT — the transcript is the page students actually print
+   ========================================================================== */
+
+@media print {
+  html.qu-x .qu-rail,
+  html.qu-x .qu-print { display: none !important; }
+  html.qu-x.qu-transcript .pagebodydiv.qu-has-rail { display: block !important; }
+  html.qu-x tr[data-qu-row='watermark'] { display: table-row !important; color: #999 !important; font-size: 10px !important; }
+  html.qu-x #header,
+  html.qu-x #search,
+  html.qu-x #navigationcontrol,
+  html.qu-x #navigationcontrolSmall,
+  html.qu-x #crumb,
+  html.qu-x .qu-switch,
+  html.qu-x #pagefooter,
+  html.qu-x #globalFooter,
+  html.qu-x .findPageOverlay {
+    display: none !important;
+  }
+  html.qu-x,
+  html.qu-x body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  html.qu-x table.datadisplaytable {
+    border: 1px solid #999 !important;
+    break-inside: auto !important;
+  }
+  html.qu-x th.ddheader {
+    position: static !important;
+    background: #eee !important;
+    color: #000 !important;
+  }
+  html.qu-x tr {
+    break-inside: avoid !important;
+  }
+  html.qu-x caption.captiontext {
+    break-after: avoid !important;
+  }
+}
+
+/* ==========================================================================
+   15. REDUCED MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html.qu-x *,
+  html.qu-x *::before,
+  html.qu-x *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   16. LATE OVERRIDES — duplicate suppression
+   These live last on purpose. Each hides a node the server or Cascade emits
+   twice; they were twice lost to edits further up the file, so they are kept
+   together at the end where both order and specificity are unambiguous.
+   ========================================================================== */
+
+/* Result views ship more than one .staticheaders — the server's and the one
+   Cascade writes after the POST — which rendered the identity block twice. */
+html.qu-x .staticheaders[data-qu-identity-dupe] {
+  display: none !important;
+}
+
+/* Cascade draws a button.htmlButton over the form's own input[type=submit].
+   Where both carry the same label the input is a visual duplicate; it is
+   hidden, never removed, so the form still submits normally. */
+html.qu-x input[type='submit'][data-qu-dupe='1'] {
+  display: none !important;
+}
+/* A form submit Cascade did NOT shadow is a real second action, so it reads
+   as the secondary button beside the primary one. */
+html.qu-x input[type='submit'][data-qu-dupe='0'] {
+  background: none !important;
+  color: var(--x-brand-text) !important;
+  border: 1px solid var(--x-brand-text) !important;
+}
+html.qu-x input[type='submit'][data-qu-dupe='0']:hover {
+  background: var(--x-brand-tint) !important;
+}
+
+/* Account Balance reads as a figure, not as a table row. */
+html.qu-x .qu-balance {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 14px !important;
+  border-radius: var(--x-r-pill) !important;
+  background: var(--x-brand-tint) !important;
+  border: 1px solid var(--x-brand-tint-border) !important;
+}
+html.qu-x .qu-balance-label {
+  font: 600 12px/1 var(--x-font-ui) !important;
+  color: var(--x-brand-text) !important;
+}
+html.qu-x .qu-balance-value {
+  font: 700 14px/1 var(--x-font-mono) !important;
+  color: var(--x-brand-text) !important;
+}
+html.qu-x tr[data-qu-balance-moved] {
+  display: none !important;
+}
+
+/* --- Transcript: the totals block ---
+
+   The whole-record totals are the figure the page exists to give, so the block
+   is tinted and its GPA printed in the brand colour. */
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-section^='transcript-totals'] {
+  background: var(--x-brand-tint) !important;
+  border-inline: 1px solid var(--x-brand-tint-border) !important;
+}
+html.qu-x.qu-transcript
+  table[data-qu-transcript]
+  tr[data-qu-section^='transcript-totals'][data-qu-row='section'] {
+  border-top: 1px solid var(--x-brand-tint-border) !important;
+  border-radius: var(--x-r-card) var(--x-r-card) 0 0 !important;
+  padding: 14px 20px 10px !important;
+  margin-top: 16px !important;
+}
+html.qu-x.qu-transcript
+  table[data-qu-transcript]
+  tr[data-qu-section^='transcript-totals'][data-qu-row='totals']:last-of-type {
+  border-bottom: 1px solid var(--x-brand-tint-border) !important;
+  border-radius: 0 0 var(--x-r-card) var(--x-r-card) !important;
+}
+html.qu-x.qu-transcript
+  table[data-qu-transcript]
+  tr[data-qu-section^='transcript-totals']
+  th.ddheader {
+  background: none !important;
+}
+
+/* GPA is the last column of a totals row: brand colour, bold, in both the
+   per-term block and the whole-record one. */
+html.qu-x.qu-transcript table[data-qu-transcript] tr[data-qu-row='totals'] > td:last-child {
+  font: 700 13px/1.5 var(--x-font-mono) !important;
+  color: var(--x-brand-text) !important;
+}
+
+/* ==========================================================================
+   17. TABLE SHAPING — numeric columns, totals blocks, stat rows, note banners
+   All of it driven by the data-attributes enhance.js writes.
+   ========================================================================== */
+
+/* A numeric column is end-aligned as a unit, header included, so the figures
+   line up under their own label. */
+html.qu-x th.ddheader[data-qu-num],
+html.qu-x td.dddefault[data-qu-num] {
+  text-align: end !important;
+}
+html.qu-x td.dddefault[data-qu-num] {
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* The rows at the foot of a summary table are totals, not more data: they
+   sit above a rule and carry the weight. */
+html.qu-x tr[data-qu-total] > th.ddlabel,
+html.qu-x tr[data-qu-total] > td.dddefault {
+  font-weight: 600 !important;
+  color: var(--x-ink) !important;
+  background: none !important;
+}
+html.qu-x tr[data-qu-total-first] > th,
+html.qu-x tr[data-qu-total-first] > td {
+  border-top: 2px solid var(--x-border-strong) !important;
+}
+
+/* Account Balance rides in the section header beside the caption. */
+html.qu-x caption[data-qu-caption-moved] {
+  display: none !important;
+}
+html.qu-x .qu-section-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+  margin: 24px 0 0 !important;
+}
+/* with a pill present the underline belongs to the label, not the caption */
+
+html.qu-x .qu-caption-label {
+  display: inline-block !important;
+  position: relative !important;
+  padding-bottom: 8px !important;
+}
+html.qu-x .qu-caption-label::after {
+  content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 0 !important;
+  bottom: 0 !important;
+  width: 32px !important;
+  height: 3px !important;
+  background: var(--x-brand-text) !important;
+}
+
+/* A two- or three-figure table is a stat row, not a list. */
+html.qu-x table.datadisplaytable[data-qu-stats] {
+  display: grid !important;
+  grid-template-columns: repeat(var(--qu-stats, 3), 1fr) !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+}
+html.qu-x table.datadisplaytable[data-qu-stats='2'] { --qu-stats: 2; }
+html.qu-x table.datadisplaytable[data-qu-stats='3'] { --qu-stats: 3; }
+html.qu-x table.datadisplaytable[data-qu-stats='4'] { --qu-stats: 4; }
+html.qu-x table.datadisplaytable[data-qu-stats] > caption {
+  grid-column: 1 / -1 !important;
+}
+html.qu-x table.datadisplaytable[data-qu-stats] > tbody {
+  display: contents !important;
+}
+html.qu-x table.datadisplaytable[data-qu-stats] tr {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding: 14px 20px !important;
+  border-inline-end: 1px solid var(--x-hairline) !important;
+}
+html.qu-x table.datadisplaytable[data-qu-stats] tr:last-child {
+  border-inline-end: 0 !important;
+}
+html.qu-x table.datadisplaytable[data-qu-stats] td:first-child {
+  padding: 0 !important;
+  border: 0 !important;
+  font: 600 11px/1.2 var(--x-font-ui) !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--x-muted) !important;
+  background: none !important;
+}
+html.qu-x table.datadisplaytable[data-qu-stats] td:last-child {
+  padding: 0 !important;
+  border: 0 !important;
+  font: 700 22px/1.2 var(--x-font-mono) !important;
+  color: var(--x-ink) !important;
+  background: none !important;
+  text-align: start !important;
+}
+
+/* The "Note:" table is a warning banner, not a table of red rows. */
+html.qu-x table.datadisplaytable[data-qu-note] {
+  display: block !important;
+  position: relative !important;
+  background: var(--x-warn-bg) !important;
+  border: 1px solid var(--x-warn-border) !important;
+  border-radius: var(--x-r-area) !important;
+  padding: 14px 16px 14px 44px !important;
+  overflow: visible !important;
+}
+html.qu-x table.datadisplaytable[data-qu-note]::before {
+  content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 16px !important;
+  top: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
+  background: var(--x-warn-text) !important;
+  -webkit-mask: var(--qu-i-warn) center / contain no-repeat !important;
+  mask: var(--qu-i-warn) center / contain no-repeat !important;
+}
+html.qu-x table.datadisplaytable[data-qu-note] > caption {
+  display: none !important;
+}
+html.qu-x table.datadisplaytable[data-qu-note] > tbody,
+html.qu-x table.datadisplaytable[data-qu-note] tr {
+  display: block !important;
+}
+html.qu-x table.datadisplaytable[data-qu-note] td {
+  display: block !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font: 400 13.5px/1.7 var(--x-font-ui) !important;
+  color: var(--x-warn-text) !important;
+}
+
+/* An empty <caption> still reserved a caption row and drew the section rule,
+   leaving a bare underline hovering above cards like Update Mobile Number.
+   enhance.js tags the empties. */
+html.qu-x caption.captiontext[data-qu-caption-empty] {
+  display: none !important;
+}
+
+/* Key/value label column: a fixed label track against a 1fr value. The old
+   34% let the value drift ~470px from its label on full-width pages such as
+   View Student Information; a fixed column keeps the pair tight at any card
+   width. Grid and transcript rows set their own tracks and are untouched. */
+@media (min-width: 641px) {
+  html.qu-x:not(.qu-transcript) table.datadisplaytable[data-qu-table='kv'] th.ddlabel,
+  html.qu-x:not(.qu-transcript) table.datadisplaytable[data-qu-table='mixed'] th.ddlabel {
+    width: 260px !important;
+  }
+}
+
+/* --- Gateway card ---
+   "Select a term, submit" is the shape of ten pages, and it reads as one card
+   holding the notice, the fields and the buttons. Banner ships those as three
+   siblings, so the form becomes the card — enhance.js moves the notice inside
+   it — and the inner table stops being one. */
+html.qu-x form[data-qu-gateway] {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 560px !important;
+  margin: 20px 0 0 !important;
+  padding: 28px !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-card) !important;
+  box-shadow: var(--x-shadow-card) !important;
+}
+/* Outranks the #pagebody full-column rule, which insets the banner 32px.
+   Some gateways already ship the notice inside the form, so match both. */
+html.qu-x #pagebody form[data-qu-gateway] .infotextdiv {
+  max-width: none !important;
+  margin: 0 0 20px !important;
+  padding-inline: 0 !important;
+}
+html.qu-x form[data-qu-gateway] table.dataentrytable {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+html.qu-x form[data-qu-gateway] > button.htmlButton {
+  margin-top: 24px !important;
+}
+/* Artboard 05 runs the term select the full width of the card at 44px. */
+html.qu-x form[data-qu-gateway] select {
+  width: 100% !important;
+  min-height: 44px !important;
+}
+/* Artboard 09 gives the edit form the same card 80px wider. */
+html.qu-x form[data-qu-gateway='edit'] {
+  max-width: 640px !important;
+}
+
+/* Section head as the card's header row. A <caption> paints outside the
+   table's border box, so the head floated above the card — except on a stat
+   table, which is display:grid and so makes its caption a grid item and draws
+   the head inside. The GPA Calculator showed both at once. Give the caption
+   the card's top edge and drop the table's, and the pair reads as one card
+   whichever path it took. */
+html.qu-x table.datadisplaytable > caption.captiontext:not([data-qu-caption-empty]) {
+  box-sizing: border-box !important;
+  margin-block: 24px 0 !important;
+  padding: 18px 20px 14px !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-bottom: 0 !important;
+}
+html.qu-x table.datadisplaytable:has(> caption.captiontext:not([data-qu-caption-empty])) {
+  margin-block: 0 28px !important;
+  border-top: 0 !important;
+}
+/* Stat tables already place the head inside; keep them off this path. */
+html.qu-x table.datadisplaytable[data-qu-stats] > caption.captiontext {
+  border: 0 !important;
+  background: none !important;
+  padding: 18px 20px 0 !important;
+  margin-block: 0 !important;
+}
+html.qu-x table.datadisplaytable[data-qu-stats] {
+  border-top: 1px solid var(--x-hairline) !important;
+  margin-block: 24px 28px !important;
+}
+/* The balance-pill head is that same card header, built as a div rather than
+   a caption so the pill can sit on its row. */
+html.qu-x .qu-section-head {
+  box-sizing: border-box !important;
+  padding: 18px 20px 14px !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-bottom: 0 !important;
+}
+html.qu-x .qu-section-head + table.datadisplaytable {
+  margin-block: 0 28px !important;
+  border-top: 0 !important;
+}
+
+/* --- Transcript preamble cards ---
+   enhance.js groups STUDENT INFORMATION and Curriculum Information into a
+   <tbody> each, which gives the card a real box to paint and the two-up grid
+   a real container. It replaces floated half-width rows, whose side borders
+   drew a rule down the middle and whose gaps showed the page through wherever
+   a section held an odd number of pairs. */
+html.qu-x.qu-transcript table[data-qu-transcript] tbody[data-qu-card] {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0 24px !important;
+  padding: 8px 20px 14px !important;
+  margin-block: 0 16px !important;
+  box-sizing: border-box !important;
+  background: var(--x-surface) !important;
+  border: 1px solid var(--x-hairline) !important;
+  border-radius: var(--x-r-card) !important;
+  box-shadow: var(--x-shadow-card) !important;
+  overflow: hidden !important;
+}
+/* the section heading is the card's header row */
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='section'] {
+  grid-column: 1 / -1 !important;
+  float: none !important;
+  width: auto !important;
+  margin: -8px -20px 8px !important;
+  padding: 14px 20px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+  background: var(--x-surface) !important;
+}
+/* each pair: a 180px label against its value, hairline under */
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='kv'] {
+  display: grid !important;
+  grid-template-columns: 180px 1fr !important;
+  gap: 12px !important;
+  align-items: baseline !important;
+  float: none !important;
+  width: auto !important;
+  padding: 7px 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+  background: none !important;
+}
+/* a sub-heading ("Current Program") and the value row under it both span */
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='kv'][data-qu-subhead],
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='data'] {
+  grid-column: 1 / -1 !important;
+  display: block !important;
+  float: none !important;
+  width: auto !important;
+  clear: none !important;
+  border: 0 !important;
+  background: none !important;
+}
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='kv'][data-qu-subhead] {
+  padding: 14px 0 0 !important;
+}
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='kv'][data-qu-subhead] > th {
+  font: 600 11.5px/1.4 var(--x-font-ui) !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--x-muted) !important;
+}
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='data'] {
+  padding: 0 0 7px !important;
+  border-bottom: 1px solid var(--x-hairline) !important;
+}
+html.qu-x.qu-transcript tbody[data-qu-card] > tr[data-qu-row='data'] > td {
+  font: 400 14px/1.5 var(--x-font-ui) !important;
+  color: var(--x-ink) !important;
+  padding: 0 !important;
+  background: none !important;
+}
+/* the last pair in each column needs no rule under it */
+html.qu-x.qu-transcript tbody[data-qu-card] > tr:last-child,
+html.qu-x.qu-transcript tbody[data-qu-card] > tr:nth-last-child(2):not([data-qu-subhead]) {
+  border-bottom: 0 !important;
+}
+/* The transcript's own cards are the preamble and term cards, so the table
+   must not also be one — the caption rule above would otherwise wrap them all
+   in a second border. There is no outer frame on this page: the rail sits
+   beside a column of separate cards, and "Transcript Data" is just a heading. */
+html.qu-x.qu-transcript table[data-qu-transcript] {
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+html.qu-x.qu-transcript table[data-qu-transcript] > caption.captiontext {
+  padding: 0 0 8px !important;
+  margin-block: 0 12px !important;
+  border: 0 !important;
+  background: none !important;
+}
+/* #row1 and #row2 are Banner's own layout rows on the public landing page.
+   It ships them empty, so they drew two white boxes above the links. Same
+   dead-container problem as an empty #contentBelt; enhance.js tags them. */
+html.qu-x #row1[data-qu-belt-empty],
+html.qu-x #row2[data-qu-belt-empty] {
+  display: none !important;
+}
+/* The landing grid is four across at full width; it has to fold before the
+   cards go narrower than their photographs read at. */
+@media (max-width: 1100px) {
+  html.qu-x .qu-public {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 640px) {
+  html.qu-x .qu-public {
+    grid-template-columns: 1fr !important;
+  }
+  html.qu-x .qu-public-heading {
+    font-size: 22px !important;
+    padding-inline: 16px !important;
+  }
+}
