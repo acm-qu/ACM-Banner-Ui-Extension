@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "myQU Banner — UI Enhancer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Restyles mybanner.qu.edu.qa in place. Two themes (QU maroon / ACM mint), light and dark, EN and AR. Same server, same pages, same data.",
   "permissions": ["storage"],
   "host_permissions": ["https://mybanner.qu.edu.qa/*"],
