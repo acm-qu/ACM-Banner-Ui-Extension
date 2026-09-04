@@ -1794,8 +1794,33 @@
     });
   };
 
-  observer = new MutationObserver(schedule);
-  observer.observe(root, { childList: true, subtree: true });
+  // A level-3 panel is opened and closed by one line of Cascade: the level-2
+  // card toggles its own .selected, and its callback slides the panel up when
+  // the class has gone. Nothing is added or removed from the DOM either way,
+  // so a childList-only observer saw the open (the panel is refilled) and
+  // never the close — the pass never re-ran, .qu-panel-open stayed put, and
+  // the sheet held the panel open against jQuery going display:none inline.
+  //
+  // Attributes cannot be watched wholesale: the pass rewrites data-qu-* on
+  // every run, so any record it can cause itself would re-arm it every frame.
+  // Narrowing to class is not enough either — Cascade writes .hover on these
+  // same cards on every mouseenter. Only a change in the selected token is a
+  // real state change, and nothing here ever writes that token.
+  const wasSelected = (cls) => (' ' + (cls || '') + ' ').indexOf(' selected ') > -1;
+  const stateChanged = (rec) =>
+    rec.type !== 'attributes' ||
+    wasSelected(rec.oldValue) !== rec.target.classList.contains('selected');
+
+  observer = new MutationObserver((records) => {
+    if (records.some(stateChanged)) schedule();
+  });
+  observer.observe(root, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class'],
+    attributeOldValue: true,
+  });
   window.addEventListener('hashchange', schedule);
   window.addEventListener('popstate', schedule);
   document.addEventListener('DOMContentLoaded', () => {
@@ -1807,7 +1832,7 @@
   // Exposed for debugging from the console only. Holds no page data.
   Object.defineProperty(window, '__quEnhancer', {
     value: Object.freeze({
-      version: '1.0.0',
+      version: '1.0.1',
       LOGOUT_TRAP: LOGOUT_TRAP,
       hasCredentials: hasCredentials,
       targetFromId: targetFromId,
