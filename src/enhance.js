@@ -1627,11 +1627,28 @@
     if (belt) belt.style.removeProperty('left');
 
     // Mark the open card's row panel. Every row break carries the same
-    // id="level3Container", so getElementById only ever sees the first.
-    const open = document.querySelector('#contentBelt > .htmlButtonLevel2-3.selected');
+    // id="level3Container", so getElementById only ever sees the first;
+    // Cascade binds a panel to its card by adding the card's id as a class,
+    // and never takes a stale one back off, so a panel that has served two
+    // cards carries both ids for the rest of the page's life.
+    //
+    // More than one card can hold .selected at once: Cascade clears the old
+    // one from its slideUp callback, so switching rows leaves both set for
+    // the length of the animation. Matching only the first selected card in
+    // document order shut the other one's panel, and since clearing a stale
+    // .selected changes no class on any panel, the pass that would undo it
+    // never ran — the card sat there looking open, chevron flipped, with no
+    // panel under it. Honour every selected card and let Cascade settle.
+    const open = Array.prototype.slice
+      .call(document.querySelectorAll('#contentBelt > .htmlButtonLevel2-3.selected'))
+      // An id is required to bind a panel: classList.contains('') throws.
+      .filter((card) => card.id);
     document.querySelectorAll('#contentBelt > [id="level3Container"]').forEach((panel) => {
       panel.dataset.qu = '1';
-      panel.classList.toggle('qu-panel-open', !!open && panel.classList.contains(open.id));
+      panel.classList.toggle(
+        'qu-panel-open',
+        open.some((card) => panel.classList.contains(card.id))
+      );
     });
 
     // table.datadisplaytable is used for key/value pairs and for grids alike,
@@ -1803,13 +1820,30 @@
   //
   // Attributes cannot be watched wholesale: the pass rewrites data-qu-* on
   // every run, so any record it can cause itself would re-arm it every frame.
-  // Narrowing to class is not enough either — Cascade writes .hover on these
-  // same cards on every mouseenter. Only a change in the selected token is a
-  // real state change, and nothing here ever writes that token.
-  const wasSelected = (cls) => (' ' + (cls || '') + ' ').indexOf(' selected ') > -1;
+  // Narrowing to the selected token alone was too far the other way. Which
+  // panel is open is two separate writes by Cascade — .selected on the card,
+  // and the card's id added as a class to its row's level3Container — and a
+  // filter that only recognised the first ignored the second outright. When
+  // the tagging landed after the pass had already run, which is the ordinary
+  // case on a hash restore and on any open whose writes straddle a frame,
+  // nothing re-ran the pass: .qu-panel-open was never applied and the sheet's
+  // display:none held the panel shut until some unrelated selected change
+  // happened along.
+  //
+  // So compare the whole class list instead, minus the tokens that are not
+  // state: .hover, which Cascade writes on these same cards on every
+  // mouseenter, and our own qu- tokens, which the pass writes itself. Every
+  // class this file adds is qu- prefixed, so that pair is the whole of it.
+  const isState = (token) => token !== 'hover' && token.slice(0, 3) !== 'qu-';
+  const stateTokens = (cls) =>
+    (cls || '')
+      .split(/\s+/)
+      .filter((t) => t && isState(t))
+      .sort()
+      .join(' ');
   const stateChanged = (rec) =>
     rec.type !== 'attributes' ||
-    wasSelected(rec.oldValue) !== rec.target.classList.contains('selected');
+    stateTokens(rec.oldValue) !== stateTokens(rec.target.getAttribute('class'));
 
   observer = new MutationObserver((records) => {
     if (records.some(stateChanged)) schedule();
@@ -1832,7 +1866,7 @@
   // Exposed for debugging from the console only. Holds no page data.
   Object.defineProperty(window, '__quEnhancer', {
     value: Object.freeze({
-      version: '1.0.1',
+      version: '1.0.2',
       LOGOUT_TRAP: LOGOUT_TRAP,
       hasCredentials: hasCredentials,
       targetFromId: targetFromId,

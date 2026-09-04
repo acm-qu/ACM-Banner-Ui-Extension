@@ -1515,10 +1515,18 @@ html.qu-x #contentBelt ul.items > li {
   padding: 0 !important;
   background: none !important;
 }
+/* The li is a grid item and stretches to the tallest option in its row, but
+   the a inside it is not, and only ever took its own content height. Options
+   that carry no Arabic line — Banner does not translate all of them — drew a
+   short hover background and a smaller click target inside a full-height
+   cell. border-box keeps the padding inside that height rather than adding
+   12px to each end of it. */
 html.qu-x #contentBelt ul.items > li > a {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
   padding: 12px 14px !important;
   border-radius: 6px !important;
   background: none !important;
