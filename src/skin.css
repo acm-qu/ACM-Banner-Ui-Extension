@@ -3194,8 +3194,19 @@ html.qu-x.qu-ar td.dddefault {
     border-bottom: 1px solid var(--x-hairline) !important;
     padding-bottom: 10px !important;
   }
-  html.qu-x table.datadisplaytable[data-qu-table='grid'] {
+  /* A table wider than a phone scrolls inside its own card. The page never
+     scrolls sideways — body clips overflow — so anything past the frame was
+     cut off and unreachable. Key/value tables stack instead (above); the
+     stat tiles and note banner lay out their own cells. */
+  html.qu-x table.datadisplaytable:not([data-qu-table='kv'], [data-qu-stats], [data-qu-note], [data-qu-transcript]),
+  html.qu-x .pagebodydiv table[data-qu-bare] {
     display: block !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+  }
+  /* The transcript's rows are grids with content-sized tracks; its table
+     scrolls as one. */
+  html.qu-x.qu-transcript table[data-qu-transcript] {
     overflow-x: auto !important;
   }
   /* The transcript's two-up preamble cards stack their pairs on a phone. */
