@@ -42,7 +42,7 @@
 
   // --- Theme, stamped before first paint ---
 
-  const DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en', enabled: true, motion: 'on' };
+  const DEFAULTS = { theme: 'qu', mode: 'light', lang: 'en', enabled: true, motion: 'on' };
 
   function stampTheme({ theme, mode, lang, motion }) {
     const dark =

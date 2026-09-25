@@ -49,7 +49,8 @@ myBanner tab afterwards.
 
 **The toolbar popup** — click the extension's icon for the on/off switch, the
 theme (QU maroon or ACM mint), the appearance (auto, light, dark) and an
-Animations switch. The popup wears the theme you pick.
+Animations switch. The popup wears the theme you pick. Out of the box it is
+QU maroon, light, with animations on.
 
 Turning it off hands the page straight back to Banner, untouched. Your choices
 are stored in Chrome's own sync storage, so they follow your Chrome profile

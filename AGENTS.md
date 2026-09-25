@@ -174,7 +174,7 @@ There is no message passing and no `scripting` permission. The popup writes
 `theme`, `mode`, `lang`, `enabled`, `motion` to `chrome.storage.sync`; the content script's
 `chrome.storage.onChanged` listener restamps every open Banner tab. Flipping
 `enabled` triggers `location.reload()` rather than trying to unwind in place.
-Both sides declare the same `DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en',
+Both sides declare the same `DEFAULTS = { theme: 'qu', mode: 'light', lang: 'en',
 enabled: true, motion: 'on' }` — keep them in sync. `motion` is stamped as
 `data-qux-motion` on the root (a data attribute, so the class-only observer
 never sees it); `off` zeroes the motion tokens.

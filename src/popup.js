@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en', enabled: true, motion: 'on' };
+  const DEFAULTS = { theme: 'qu', mode: 'light', lang: 'en', enabled: true, motion: 'on' };
   const root = document.documentElement;
   const darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
