@@ -179,6 +179,13 @@ enabled: true, motion: 'on' }` — keep them in sync. `motion` is stamped as
 `data-qux-motion` on the root (a data attribute, so the class-only observer
 never sees it); `off` zeroes the motion tokens.
 
+The popup wears the theme it controls: `popup.js` stamps the same `data-qux`
+scope on the popup's own `<html>`, and `popup.html` carries its own copy of the
+section 1 token values it uses — change both. It is loaded from `<head>` and
+paints the prefs it last showed (cached in its own `localStorage`, prefs only)
+before `chrome.storage.sync` answers; transitions switch on only after that, so
+opening it never animates.
+
 ## skin.css conventions
 
 - **`!important` on every declaration** and **`html.qu-x` on every selector.**
