@@ -1723,21 +1723,26 @@ html.qu-x td.indefault {
 html.qu-x td.indefault[data-qu-iconcell='1'] {
   display: none !important;
 }
+/* Messages keep their text in ordinary flow and hang the icon in a gutter
+   beside it. They used to be flex rows, which made every inline element in a
+   message — a <b>NOT</b>, a link — a column of its own, so a sentence broke
+   into three side-by-side pieces. */
+
 /* a message cell with no .infotext span still needs the icon */
 html.qu-x td.indefault[data-qu-iconcell='0']:not(:has(.infotext)):not(:has(.informationtext)) {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
+  position: relative !important;
+  padding-inline-start: 44px !important;
   font: 400 14px/1.6 var(--x-font-ui) !important;
   color: var(--x-info-text) !important;
 }
 html.qu-x
   td.indefault[data-qu-iconcell='0']:not(:has(.infotext)):not(:has(.informationtext))::before {
   content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 16px !important;
+  top: 16px !important;
   width: 18px !important;
   height: 18px !important;
-  flex: none !important;
-  margin-top: 1px !important;
   background: var(--x-info-text) !important;
   -webkit-mask: var(--qu-i-info) center / contain no-repeat !important;
   mask: var(--qu-i-info) center / contain no-repeat !important;
@@ -1747,9 +1752,9 @@ html.qu-x td.indefault img {
 }
 html.qu-x .infotext,
 html.qu-x .informationtext {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
+  display: block !important;
+  position: relative !important;
+  padding-inline-start: 28px !important;
   font: 400 14px/1.6 var(--x-font-ui) !important;
   color: var(--x-info-text) !important;
   background: none !important;
@@ -1757,10 +1762,11 @@ html.qu-x .informationtext {
 html.qu-x .infotext::before,
 html.qu-x .informationtext::before {
   content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 0 !important;
+  top: 2px !important;
   width: 18px !important;
   height: 18px !important;
-  flex: none !important;
-  margin-top: 1px !important;
   background: var(--x-info-text) !important;
   -webkit-mask: var(--qu-i-info) center / contain no-repeat !important;
   mask: var(--qu-i-info) center / contain no-repeat !important;
@@ -1768,10 +1774,10 @@ html.qu-x .informationtext::before {
 
 html.qu-x .errortext,
 html.qu-x .warningtext {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
-  padding: 14px 16px !important;
+  display: block !important;
+  position: relative !important;
+  padding-block: 14px !important;
+  padding-inline: 44px 16px !important;
   border-radius: var(--x-r-area) !important;
   font: 400 14px/1.6 var(--x-font-ui) !important;
   border: 1px solid var(--x-error-border) !important;
@@ -1783,18 +1789,21 @@ html.qu-x .warningtext {
   background: var(--x-warn-bg) !important;
   color: var(--x-warn-text) !important;
 }
-html.qu-x .errortext::before,
-html.qu-x .warningtext::before {
+/* the centred empty state reuses these classes with its own chip; the gutter
+   icon is for the banner form only */
+html.qu-x .errortext:not([data-qu-state])::before,
+html.qu-x .warningtext:not([data-qu-state])::before {
   content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 16px !important;
+  top: 16px !important;
   width: 18px !important;
   height: 18px !important;
-  flex: none !important;
-  margin-top: 1px !important;
   background: currentColor !important;
   -webkit-mask: var(--qu-i-error) center / contain no-repeat !important;
   mask: var(--qu-i-error) center / contain no-repeat !important;
 }
-html.qu-x .warningtext::before {
+html.qu-x .warningtext:not([data-qu-state])::before {
   -webkit-mask-image: var(--qu-i-warn) !important;
   mask-image: var(--qu-i-warn) !important;
 }
@@ -2660,12 +2669,11 @@ html.qu-x tr[data-qu-row='spacer'] {
    draws it centred with a 56px chip. Two pseudo-elements, because one cannot
    be both a filled circle and a masked glyph: ::before is the chip, ::after
    is the icon laid over it. */
+/* Block, not a flex column: a flex column would put every inline element of
+   the message — a bold word, a link — on a line of its own. */
 html.qu-x [data-qu-state='empty'] {
   position: relative !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 16px !important;
+  display: block !important;
   max-width: 340px !important;
   margin: 56px auto !important;
   padding: 0 !important;
@@ -2677,10 +2685,11 @@ html.qu-x [data-qu-state='empty'] {
 }
 html.qu-x [data-qu-state='empty']::before {
   content: '' !important;
+  display: block !important;
+  box-sizing: border-box !important;
   width: 56px !important;
   height: 56px !important;
-  margin: 0 !important;
-  flex: none !important;
+  margin: 0 auto 16px !important;
   border-radius: 50% !important;
   background: var(--x-warn-bg) !important;
   border: 1px solid var(--x-warn-border) !important;
@@ -2691,6 +2700,8 @@ html.qu-x [data-qu-state='empty']::after {
   content: '' !important;
   position: absolute !important;
   top: 15px !important;
+  inset-inline: 0 !important;
+  margin-inline: auto !important;
   width: 26px !important;
   height: 26px !important;
   background: var(--x-warn-text) !important;
