@@ -1153,6 +1153,39 @@
     });
   }
 
+  /* --- Spacer breaks. A <br> between two blocks is spacing, not a line
+     break — the block already ends the line — and it adds an empty line no
+     rhythm token accounts for. Banner leaves them after tables and forms on
+     about half its pages. A run of breaks is tagged as spacing only when a
+     block (or the container's edge) bounds it on both sides; a break inside
+     running text is left alone. That is why this is not a CSS sibling rule:
+     `table + br` and `br + br` skip text nodes, so they would also match
+     breaks between lines of server text and merge them. --- */
+
+  const BLOCK_TAGS = /^(TABLE|FORM|DIV|P|UL|OL|DL|HR|H[1-6]|FIELDSET|BLOCKQUOTE|CENTER|PRE)$/;
+
+  function tagSpacerBreaks() {
+    // whitespace, comments, hidden inputs and other breaks sit inside a run
+    const inRun = (n) =>
+      !!n &&
+      ((n.nodeType === Node.TEXT_NODE && !n.nodeValue.trim()) ||
+        n.nodeType === Node.COMMENT_NODE ||
+        n.nodeName === 'BR' ||
+        (n.nodeName === 'INPUT' && n.type === 'hidden'));
+    const bounds = (n) => !n || (n.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.test(n.nodeName));
+
+    document.querySelectorAll('.pagebodydiv br:not([data-qu-br])').forEach((br) => {
+      let before = br.previousSibling;
+      while (inRun(before)) before = before.previousSibling;
+      let after = br.nextSibling;
+      while (inRun(after)) after = after.nextSibling;
+      const spacer = bounds(before) && bounds(after);
+      for (let n = before ? before.nextSibling : br.parentNode.firstChild; n && n !== after; n = n.nextSibling) {
+        if (n.nodeName === 'BR') n.dataset.quBr = spacer ? 'gap' : 'keep';
+      }
+    });
+  }
+
   /* --- Message states. .warningtext and .errortext do double duty in Banner:
      feedback about something just done, and "there is nothing here". The first
      stays a banner, the second becomes a centred empty state, and the page
@@ -1644,14 +1677,27 @@
       );
     });
 
+    // Passes that read a table, a cell or the whole page once and then mark it
+    // done wait for the parser to finish. The observer's rAF fires between
+    // parser chunks on long pages, and a one-shot pass that ran then never
+    // looked again: the transcript rail stopped at whichever term the parser
+    // had reached, a message cell still streaming looked empty and was hidden
+    // as an icon cell, and a body not yet filled drew "nothing to show". The
+    // body stays hidden until DOMContentLoaded (reveal), so waiting costs
+    // nothing on screen.
+    const parsed = document.readyState !== 'loading';
+
     // table.datadisplaytable is used for key/value pairs and for grids alike,
     // and no selector tells them apart, so tag which shape this one is.
-    document.querySelectorAll('table.datadisplaytable:not([data-qu])').forEach((t) => {
-      t.dataset.qu = '1';
-      const hasHeader = !!t.querySelector('th.ddheader');
-      const hasLabel = !!t.querySelector('th.ddlabel');
-      t.dataset.quTable = hasHeader && hasLabel ? 'mixed' : hasHeader ? 'grid' : hasLabel ? 'kv' : 'plain';
-    });
+    if (parsed) {
+      document.querySelectorAll('table.datadisplaytable:not([data-qu])').forEach((t) => {
+        t.dataset.qu = '1';
+        const hasHeader = !!t.querySelector('th.ddheader');
+        const hasLabel = !!t.querySelector('th.ddlabel');
+        t.dataset.quTable =
+          hasHeader && hasLabel ? 'mixed' : hasHeader ? 'grid' : hasLabel ? 'kv' : 'plain';
+      });
+    }
 
     // Gateway pages — "select a term, submit" — are the shape of ten pages,
     // and should read as one card holding the notice, the fields and the
@@ -1728,20 +1774,25 @@
     // holding the message. Tag the icon-only cell so the sheet can drop it;
     // testing for a missing .infotext span would also hide banners whose text
     // is not wrapped in one.
-    document.querySelectorAll('td.indefault:not([data-qu-iconcell])').forEach((td) => {
-      td.dataset.quIconcell = td.textContent.trim() ? '0' : '1';
-    });
+    if (parsed) {
+      document.querySelectorAll('td.indefault:not([data-qu-iconcell])').forEach((td) => {
+        td.dataset.quIconcell = td.textContent.trim() ? '0' : '1';
+      });
 
-    shapeTables();
-    buildBalancePill();
-    classifyMessages();
+      shapeTables();
+      buildBalancePill();
+      classifyMessages();
+      tagSpacerBreaks();
+    }
 
     const overlay = document.querySelector('.findPageOverlay');
     if (overlay) enhanceSearch(overlay);
 
-    enhanceTranscript();
-    enhanceAnonymous();
-    handleBlankPage();
+    if (parsed) {
+      enhanceTranscript();
+      enhanceAnonymous();
+      handleBlankPage();
+    }
     buildLockup();
     buildSwitcher();
     buildHeadRow();

@@ -536,6 +536,12 @@ html.qu-x
   margin-block: var(--x-gap-block) 0 !important;
 }
 
+/* A run of <br> that enhance.js found bounded by blocks on both sides:
+   spacing the rhythm already provides, not a line break in running text. */
+html.qu-x br[data-qu-br='gap'] {
+  display: none !important;
+}
+
 /* Structural line breaks between Cascade's containers (two follow
    #contentHolder in #pagebody) are spacing, not content. */
 html.qu-x :is(#content, #bodyContainer, #pageheader, #pagebody, #contentHolder) > br {
