@@ -1477,7 +1477,7 @@
         const info = targetFromId(btn.id);
         btn.dataset.quKey = info.target;
         btn.dataset.quKind = info.isMenu ? 'menu' : info.isExternal ? 'external' : 'page';
-        applyIcon(btn, info, btn.textContent);
+        // Module tabs are words only; the icon maps serve the level-2 cards.
         splitBilingual(btn.querySelector('.menu div span, .menuSmall div div'));
       });
 
@@ -1521,10 +1521,9 @@
     // navigation, so these nodes must never be replaced.
     document.querySelectorAll('#contentBelt ul.items > li > a:not([data-qu])').forEach((a) => {
       a.dataset.qu = '1';
-      const l3 = a.querySelector('h3');
-      const name = iconFromLabel((a.getAttribute('title') || '') + ' ' + (l3 ? l3.textContent : ''));
-      if (name) a.style.setProperty('--qu-icon', 'url("' + url('assets/icons/' + name + '.svg') + '")');
-      splitBilingual(l3);
+      // Options carry no icon (a chevron in the sheet marks them), so nothing
+      // is written onto Cascade's own link but the split label.
+      splitBilingual(a.querySelector('h3'));
     });
 
     // Mark the current module — exactly one. Cascade puts no class on the

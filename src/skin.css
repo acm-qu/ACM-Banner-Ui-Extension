@@ -395,9 +395,11 @@ html.qu-x {
 }
 
 /* The QU theme is sharp-cornered everywhere, including shapes that carry a
-   hardcoded radius. The ACM theme keeps its pill-and-square language. */
-html.qu-x[data-qux^='qu-'] #content *,
-html.qu-x[data-qux^='qu-'] #header * {
+   hardcoded radius and shapes drawn by pseudo-elements (icon chips, empty
+   states). The ACM theme keeps its pill-and-square language. */
+html.qu-x[data-qux^='qu-'] body *,
+html.qu-x[data-qux^='qu-'] body *::before,
+html.qu-x[data-qux^='qu-'] body *::after {
   border-radius: 0 !important;
 }
 
@@ -864,7 +866,7 @@ html.qu-x a.ac_odd {
   color: var(--x-body) !important;
   background: none !important;
   border: 0 !important;
-  border-radius: 6px !important;
+  border-radius: var(--x-r-card) !important;
   text-decoration: none !important;
 }
 html.qu-x .findPageOverlay li a::before {
@@ -1005,7 +1007,7 @@ html.qu-x .breadCrumb a {
   padding: 6px 12px !important;
   font: 500 13px/1 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
-  border-radius: 999px !important;
+  border-radius: var(--x-r-pill) !important;
   text-decoration: none !important;
   background: none !important;
 }
@@ -1079,7 +1081,7 @@ html.qu-x .crumbs > span {
 }
 html.qu-x .crumbs a {
   padding: 6px 12px !important;
-  border-radius: 999px !important;
+  border-radius: var(--x-r-pill) !important;
   font: 500 13px/1 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
   text-decoration: none !important;
@@ -1091,7 +1093,7 @@ html.qu-x .crumbs a:hover {
 }
 html.qu-x .crumbs .lastValue {
   padding: 6px 12px !important;
-  border-radius: 999px !important;
+  border-radius: var(--x-r-pill) !important;
   background: var(--x-brand-tint) !important;
   color: var(--x-brand-text) !important;
   font-weight: 600 !important;
@@ -1187,14 +1189,9 @@ html.qu-x:not(.qu-home) .menubaseButton .menu {
   width: auto !important;
   transition: background 0.15s var(--x-ease), color 0.15s var(--x-ease) !important;
 }
+/* The module tabs are words only — no icons, as on the Home cards. */
 html.qu-x:not(.qu-home) .menubaseButton .menu::before {
-  content: '' !important;
-  width: 18px !important;
-  height: 18px !important;
-  flex: none !important;
-  background: var(--x-brand-text) !important;
-  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
-  mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+  content: none !important;
 }
 html.qu-x:not(.qu-home) .menubaseButton .menu div {
   background: none !important;
@@ -1235,9 +1232,6 @@ html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face {
   background: var(--x-brand) !important;
   background-color: var(--x-brand) !important;
   color: var(--x-on-brand) !important;
-}
-html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face::before {
-  background: var(--x-on-brand) !important;
 }
 html.qu-x:not(.qu-home) .descriptionText {
   display: none !important;
@@ -1394,9 +1388,6 @@ html.qu-x .htmlButtonLevel2-3::after {
   mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
   pointer-events: none !important;
 }
-html.qu-x[data-qux^='acm-'] .htmlButtonLevel2-3::before {
-  border-radius: 0 !important;
-}
 html.qu-x .htmlButtonLevel2-3 h3 {
   grid-area: 1 / 2 !important;
   font: var(--x-w-h3) 16px/1.3 var(--x-font-ui) !important;
@@ -1504,13 +1495,13 @@ html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
   display: block !important;
   background: var(--x-brand-tint) !important;
   border: 1px solid var(--x-brand-tint-border) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   padding: 8px !important;
 }
 html.qu-x #contentBelt ul.items {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 2px !important;
+  gap: 4px !important;
   list-style: none !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -1535,34 +1526,48 @@ html.qu-x #contentBelt ul.items > li {
 html.qu-x #contentBelt ul.items > li > a {
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 12px !important;
   /* cascade.css floats each option at a fixed 250px, which wrapped every
      label into a narrow strip of a column three times as wide */
   float: none !important;
   width: auto !important;
   height: 100% !important;
   box-sizing: border-box !important;
-  padding: 12px 14px !important;
-  border-radius: 6px !important;
+  padding: 12px 16px !important;
+  min-height: 44px !important;
+  color: var(--x-ink) !important;
+  border-radius: var(--x-r-card) !important;
   background: none !important;
   text-decoration: none !important;
 }
+/* Options carry no icon; a quiet chevron at the end says each one opens a
+   page. It follows the text colour, so it turns with the hover. */
 html.qu-x #contentBelt ul.items > li > a::before {
+  content: none !important;
+}
+html.qu-x #contentBelt ul.items > li > a::after {
   content: '' !important;
-  width: 16px !important;
-  height: 16px !important;
+  width: 14px !important;
+  height: 14px !important;
   flex: none !important;
-  background: var(--x-brand-text) !important;
-  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
-  mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+  background: currentColor !important;
+  opacity: 0.55 !important;
+  -webkit-mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+  mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+}
+html.qu-x.qu-ar #contentBelt ul.items > li > a::after {
+  transform: scaleX(-1) !important;
 }
 html.qu-x #contentBelt ul.items > li > a:hover {
   background: var(--x-surface) !important;
+  color: var(--x-brand-text) !important;
   text-decoration: none !important;
 }
 html.qu-x #contentBelt ul.items h3 {
-  font: 500 14px/1.3 var(--x-font-ui) !important;
-  color: var(--x-ink) !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  font: 500 14px/1.35 var(--x-font-ui) !important;
+  color: inherit !important;
   margin: 0 !important;
   padding: 0 !important;
   background: none !important;
@@ -1574,7 +1579,7 @@ html.qu-x #contentBelt ul.items h3 .qu-en {
 html.qu-x #contentBelt ul.items h3 .qu-ar {
   display: block !important;
   font: 700 13px/1.7 var(--x-font-ar) !important;
-  color: var(--x-ink) !important;
+  color: inherit !important;
 }
 
 html.qu-x #contentBelt[data-qu-belt-empty] {
@@ -1847,7 +1852,7 @@ html.qu-x table.dataentrytable {
   width: 100% !important;
   max-width: 640px !important;
   border: 1px solid var(--x-hairline) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   background: var(--x-surface) !important;
   padding: var(--x-card-x) !important;
   box-sizing: border-box !important;
@@ -2000,7 +2005,7 @@ html.qu-x .pagebodydiv table[data-qu-bare] {
   border-collapse: collapse !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   overflow: hidden !important;
   font: 400 14px/1.5 var(--x-font-ui) !important;
 }
@@ -2203,7 +2208,7 @@ html.qu-x a.sitemaplevel2,
 html.qu-x a.sitemaplevel3 {
   display: block !important;
   text-decoration: none !important;
-  border-radius: 6px !important;
+  border-radius: var(--x-r-card) !important;
 }
 html.qu-x a.sitemaplevel1 {
   font: 600 17px/1.4 var(--x-font-ui) !important;
@@ -2299,7 +2304,7 @@ html.qu-x .qu-rail-title {
 html.qu-x .qu-rail-link {
   display: block !important;
   padding: 7px 12px !important;
-  border-radius: 6px !important;
+  border-radius: var(--x-r-card) !important;
   font: 500 12.5px/1.3 var(--x-font-ui) !important;
   color: var(--x-body) !important;
   text-decoration: none !important;
@@ -2910,7 +2915,7 @@ html.qu-x.qu-anon.qu-leaf .pagebodydiv > form {
   padding: 28px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-pop) !important;
   box-sizing: border-box !important;
 }
