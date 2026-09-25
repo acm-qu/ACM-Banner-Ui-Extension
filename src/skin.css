@@ -580,8 +580,8 @@ html.qu-x [dir='rtl'] {
    3. GLOBAL BAR — lockup, sign out / help, switcher
    A 64px full-bleed band whose content meets the frame (section 2), gap 16.
    Order across it: QU mark · divider · ACM mark · "Redesign" ····· Sign Out
-   · Help · [QU|ACM] · moon. The search is not in this bar — it sits in the
-   head row, in section 5.
+   · Help. Theme, appearance and the off switch live in the toolbar popup
+   only. The search is not in this bar — it sits in the head row, section 5.
    ========================================================================== */
 
 html.qu-x #header {
@@ -716,106 +716,6 @@ html.qu-x #globalNav a:hover {
 html.qu-x #globalNav a::before,
 html.qu-x #globalNav a::after {
   content: none !important;
-}
-
-/* --- Theme switcher (extension-owned; the only new control) ------------ */
-
-html.qu-x .qu-switch {
-  display: flex !important;
-  align-items: center !important;
-  gap: 16px !important;
-}
-html.qu-x .qu-seg {
-  display: inline-flex !important;
-  align-items: center !important;
-  flex: none !important;
-  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
-  border-radius: 999px !important;
-  overflow: hidden !important;
-}
-html.qu-x .qu-seg-btn {
-  font: 600 11px/1 var(--x-font-ui) !important;
-  padding: 8px 12px !important;
-  border: 0 !important;
-  margin: 0 !important;
-  background: none !important;
-  color: var(--x-header-ink) !important;
-  opacity: 0.75 !important;
-  cursor: pointer !important;
-  white-space: nowrap !important;
-  transition: background 0.15s var(--x-ease), opacity 0.15s var(--x-ease) !important;
-}
-html.qu-x .qu-seg-btn[data-qu-lang='ar'] {
-  font: 700 11px/1.2 var(--x-font-ar) !important;
-  padding: 6px 12px !important;
-}
-html.qu-x .qu-seg-btn:hover {
-  opacity: 1 !important;
-}
-html.qu-x .qu-seg-btn[aria-pressed='true'] {
-  background: color-mix(in srgb, var(--x-header-ink) 18%, transparent) !important;
-  opacity: 1 !important;
-}
-html.qu-x[data-qux^='acm-'] .qu-seg-btn[aria-pressed='true'] {
-  background: #3ae4d1 !important;
-  color: #010000 !important;
-}
-/* One control, two states — moon to go dark, sun to come back. */
-html.qu-x .qu-mode-btn {
-  width: 32px !important;
-  height: 32px !important;
-  flex: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
-  border-radius: 999px !important;
-  background: none !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.qu-x .qu-mode-btn::before {
-  content: '' !important;
-  width: 15px !important;
-  height: 15px !important;
-  background: var(--x-header-ink) !important;
-  -webkit-mask: var(--qu-i-moon) center / contain no-repeat !important;
-  mask: var(--qu-i-moon) center / contain no-repeat !important;
-}
-html.qu-x[data-qux$='-dark'] .qu-mode-btn::before {
-  -webkit-mask-image: var(--qu-i-sun) !important;
-  mask-image: var(--qu-i-sun) !important;
-}
-html.qu-x .qu-off-btn {
-  width: 32px !important;
-  height: 32px !important;
-  flex: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
-  border-radius: 999px !important;
-  background: none !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.qu-x .qu-off-btn::before {
-  content: '' !important;
-  width: 14px !important;
-  height: 14px !important;
-  background: var(--x-header-ink) !important;
-  -webkit-mask: var(--qu-i-x) center / contain no-repeat !important;
-  mask: var(--qu-i-x) center / contain no-repeat !important;
-}
-html.qu-x .qu-off-btn:hover {
-  background: color-mix(in srgb, var(--x-header-ink) 15%, transparent) !important;
-}
-
-html.qu-x .qu-switch :focus-visible {
-  outline: 2px solid var(--x-header-ink) !important;
-  outline-offset: 2px !important;
 }
 
 /* ==========================================================================
@@ -3293,7 +3193,6 @@ html.qu-x.qu-ar td.dddefault {
     display: block !important;
     overflow-x: auto !important;
   }
-  html.qu-x .qu-switch .qu-seg:first-child { display: none !important; }
   /* The transcript's two-up preamble cards stack their pairs on a phone. */
   html.qu-x.qu-transcript table[data-qu-transcript] tbody[data-qu-card] {
     grid-template-columns: minmax(0, 1fr) !important;
@@ -3318,7 +3217,6 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x #search,
   html.qu-x #navigationcontrol,
   html.qu-x #navigationcontrolSmall,
-  html.qu-x .qu-switch,
   html.qu-x #pagefooter,
   html.qu-x #globalFooter,
   html.qu-x .findPageOverlay {

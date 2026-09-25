@@ -90,29 +90,13 @@
       chrome.storage.sync.get(DEFAULTS, (got) => {
         if (!chrome.runtime.lastError && got) prefs = Object.assign({}, DEFAULTS, got);
         if (prefs.enabled === false) disableSkin();
-        else {
-          stampTheme(prefs);
-          // The header switcher may already be built from DEFAULTS, and would
-          // otherwise keep showing the default theme as pressed.
-          syncSwitcher();
-        }
+        else stampTheme(prefs);
         resolve();
       });
     } catch (e) {
       resolve();
     }
   });
-
-  function savePrefs(patch) {
-    prefs = Object.assign({}, prefs, patch);
-    stampTheme(prefs);
-    try {
-      chrome.storage.sync.set(patch);
-    } catch (e) {
-      /* storage unavailable — the stamp above still applies for this page */
-    }
-    syncSwitcher();
-  }
 
   try {
     chrome.storage.onChanged.addListener((changes, area) => {
@@ -130,7 +114,6 @@
       }
       if (prefs.enabled === false) return;
       stampTheme(prefs);
-      syncSwitcher();
     });
   } catch (e) {
     /* no storage events available in this context */
@@ -174,8 +157,6 @@
     ['info', 'info-circle'],
     ['warn', 'alert-triangle'],
     ['error', 'alert-circle'],
-    ['sun', 'sun'],
-    ['moon', 'moon'],
     ['chevron-down', 'chevron-down'],
     ['chevron-right', 'chevron-right'],
     ['house', 'house'],
@@ -496,8 +477,9 @@
     root.classList.toggle('qu-auth', !anon);
   }
 
-  /* --- Header: the co-branded lockup and the theme switcher, the only chrome
-     the extension owns. The QU mark stays first and never smaller than the ACM
+  /* --- Header: the co-branded lockup, the only chrome the extension adds to
+     the global bar. Theme, appearance and the off switch live in the toolbar
+     popup only. The QU mark stays first and never smaller than the ACM
      mark — this is attribution, not co-ownership. --- */
 
   function buildLockup() {
@@ -525,89 +507,6 @@
     wrap.appendChild(mark);
     wrap.appendChild(word);
     brand.after(wrap);
-  }
-
-  let switcher = null;
-
-  function segButton(attr, value, label) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'qu-seg-btn';
-    b.dataset[attr] = value;
-    b.textContent = label;
-    return b;
-  }
-
-  function buildSwitcher() {
-    const nav = document.querySelector('#globalNav ul');
-    if (!nav || document.getElementById('qu-switch')) return;
-
-    const li = document.createElement('li');
-    li.id = 'qu-switch';
-    li.className = 'qu-switch';
-
-    const themeSeg = document.createElement('span');
-    themeSeg.className = 'qu-seg';
-    themeSeg.setAttribute('role', 'group');
-    themeSeg.setAttribute('aria-label', 'Theme');
-    themeSeg.appendChild(segButton('quTheme', 'qu', 'QU'));
-    themeSeg.appendChild(segButton('quTheme', 'acm', 'ACM'));
-
-
-    const offBtn = document.createElement('button');
-    offBtn.type = 'button';
-    offBtn.className = 'qu-off-btn';
-    offBtn.dataset.quOff = '';
-    offBtn.title = 'Turn the redesign off for this site';
-    offBtn.setAttribute('aria-label', offBtn.title);
-
-    const modeBtn = document.createElement('button');
-    modeBtn.type = 'button';
-    modeBtn.className = 'qu-mode-btn';
-    modeBtn.dataset.quMode = '';
-    modeBtn.setAttribute('aria-label', 'Change appearance');
-
-    li.appendChild(themeSeg);
-    li.appendChild(modeBtn);
-    li.appendChild(offBtn);
-    nav.appendChild(li); // sits after Sign Out | Help
-    switcher = li;
-
-    li.addEventListener('click', (e) => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (btn.dataset.quTheme) savePrefs({ theme: btn.dataset.quTheme });
-      else if ('quOff' in btn.dataset) {
-        // Undoing the moved nodes in place is not worth the risk; a reload
-        // re-runs this script, which then leaves the page untouched.
-        savePrefs({ enabled: false });
-        location.reload();
-      } else if ('quMode' in btn.dataset) {
-        // Reads the resolved appearance rather than the stored preference, so
-        // the first click out of 'auto' always flips what is actually on screen.
-        const isDark = String(root.dataset.qux || '').endsWith('-dark');
-        savePrefs({ mode: isDark ? 'light' : 'dark' });
-      }
-    });
-
-    syncSwitcher();
-  }
-
-  function syncSwitcher() {
-    const li = switcher || document.getElementById('qu-switch');
-    if (!li) return;
-    li.querySelectorAll('[data-qu-theme]').forEach((b) => {
-      b.setAttribute('aria-pressed', String(b.dataset.quTheme === prefs.theme));
-    });
-    const mode = li.querySelector('[data-qu-mode]');
-    if (mode) {
-      const isDark = String(root.dataset.qux || '').endsWith('-dark');
-      mode.dataset.quModeValue = prefs.mode;
-      mode.title = isDark ? 'Switch to light appearance' : 'Switch to dark appearance';
-      mode.setAttribute('aria-label', mode.title);
-    }
   }
 
   /* --- The page head row. The welcome, the breadcrumb and the search are
@@ -1813,7 +1712,6 @@
       handleBlankPage();
     }
     buildLockup();
-    buildSwitcher();
     buildHeadRow();
     buildFooter();
   }
