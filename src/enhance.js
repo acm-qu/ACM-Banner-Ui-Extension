@@ -1419,19 +1419,38 @@
     print.addEventListener('click', () => window.print());
     rail.appendChild(print);
 
-    // Wrap the existing content so the rail sits beside one column rather than
-    // spanning a grid whose rows it would stretch.
+    // The transcript and everything after it becomes one column beside the
+    // rail. What comes before it — the notice, Banner's own jump links — stays
+    // where it is and spans both columns, in the order Banner sends it.
+    let start = table;
+    while (start.parentElement && start.parentElement !== body) start = start.parentElement;
     const main = document.createElement('div');
     main.className = 'qu-transcript-main';
-    while (body.firstChild) main.appendChild(body.firstChild);
-    body.appendChild(main);
-    body.prepend(rail);
+    body.insertBefore(main, start);
+    while (start) {
+      const next = start.nextSibling;
+      main.appendChild(start);
+      start = next;
+    }
+    body.insertBefore(rail, main);
     body.classList.add('qu-has-rail');
+
+    // The body is now a grid, and loose text in a grid becomes an anonymous
+    // item in a cell of its own. Wrap it so it spans the columns like the rest
+    // of what sits above the transcript. The &nbsp;&nbsp; runs between Banner's
+    // jump links are spacing that goes with those links, and is marked so.
+    Array.prototype.slice.call(body.childNodes).forEach((node) => {
+      if (node.nodeType !== Node.TEXT_NODE || /^[ \t\n\r\f]*$/.test(node.nodeValue)) return;
+      const span = document.createElement('span');
+      if (!node.nodeValue.replace(/[\s ]+/g, '')) span.dataset.quSpacer = '1';
+      node.before(span);
+      span.appendChild(node);
+    });
 
     // The rail is this redesign's rendering of the server's own "-Top-"
     // anchor links, so the originals become duplicates.
     const norm = (t) => t.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-    main.querySelectorAll('a[href^="#"]').forEach((a) => {
+    body.querySelectorAll('a[href^="#"]:not(.qu-rail-link)').forEach((a) => {
       const label = norm(a.textContent);
       if (!label) return;
       const matches = sections.some(

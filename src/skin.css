@@ -2361,23 +2361,38 @@ html.qu-x a.sitemaplevel3:hover {
    exactly — 9 columns for a course row, 7 for a totals row, 2 for key/value.
    ========================================================================== */
 
+/* Rail beside one column of cards, as the design draws it: 224px, a 20px gap.
+   Whatever Banner sends above the transcript — the notice, its jump links —
+   spans both columns, so the notice meets both frame edges and the rail and
+   the cards start level beneath it. */
 html.qu-x.qu-transcript .pagebodydiv.qu-has-rail {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 32px !important;
+  display: grid !important;
+  grid-template-columns: 224px minmax(0, 1fr) !important;
+  column-gap: var(--x-s-5) !important;
+  align-items: start !important;
+}
+html.qu-x.qu-transcript .pagebodydiv.qu-has-rail > :not(.qu-rail, .qu-transcript-main) {
+  grid-column: 1 / -1 !important;
+}
+/* The rail takes the block gap itself; the column's first card brings its own
+   from the stack rule, so both start level under the notice. */
+html.qu-x .qu-rail {
+  grid-column: 1 !important;
+  margin-block: var(--x-gap-block) 0 !important;
 }
 html.qu-x .qu-transcript-main {
-  flex: 1 1 auto !important;
+  grid-column: 2 !important;
   min-width: 0 !important;
+  margin-block: 0 !important;
 }
-html.qu-x [data-qu-anchor-dupe] {
+html.qu-x [data-qu-anchor-dupe],
+html.qu-x [data-qu-spacer] {
   display: none !important;
 }
 
 /* --- the rail ---------------------------------------------------------- */
 
 html.qu-x .qu-rail {
-  flex: 0 0 240px !important;
   position: sticky !important;
   top: 16px !important;
   display: flex !important;
@@ -3232,6 +3247,33 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x .rightaligntext {
     text-align: start !important;
   }
+  /* The transcript goes to one column; the rail becomes a wrapping row of
+     jump links above the cards instead of a 224px column beside them. */
+  html.qu-x.qu-transcript .pagebodydiv.qu-has-rail {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html.qu-x .qu-rail,
+  html.qu-x .qu-transcript-main {
+    grid-column: 1 !important;
+  }
+  html.qu-x .qu-rail {
+    position: static !important;
+    max-height: none !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: var(--x-s-1) !important;
+  }
+  html.qu-x .qu-rail-title {
+    flex-basis: 100% !important;
+    padding-inline: 0 !important;
+  }
+  html.qu-x .qu-rail-link[data-qu-level='2'] {
+    padding-inline-start: 12px !important;
+  }
+  html.qu-x .qu-print {
+    margin-top: 0 !important;
+  }
 }
 
 @media (max-width: 640px) {
@@ -3263,6 +3305,10 @@ html.qu-x.qu-ar td.dddefault {
     overflow-x: auto !important;
   }
   html.qu-x .qu-switch .qu-seg:first-child { display: none !important; }
+  /* The transcript's two-up preamble cards stack their pairs on a phone. */
+  html.qu-x.qu-transcript table[data-qu-transcript] tbody[data-qu-card] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
   /* The level-3 panel spans the one-column grid; two option columns inside
      it would halve an already narrow width. */
   html.qu-x #contentBelt ul.items {
