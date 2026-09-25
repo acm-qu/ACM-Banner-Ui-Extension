@@ -1,129 +1,549 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr" data-qux="qu-light" data-anim="on" data-enabled="on">
   <head>
     <meta charset="utf-8" />
-    <title>myQU Banner</title>
+    <title>ACM Banner Redesign</title>
     <style>
+      /* The popup wears the theme it controls. popup.js stamps the same
+         data-qux scope on <html> that the content script stamps on Banner,
+         and the values below are the ones skin.css section 1 gives each
+         scope — change both together. */
+
+      @font-face {
+        font-family: "Lexend";
+        font-weight: 100 900;
+        font-display: block;
+        src: url("../assets/fonts/Lexend.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Poppins";
+        font-weight: 800;
+        font-display: block;
+        src: url("../assets/fonts/Poppins-800.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        font-weight: 100 800;
+        font-display: block;
+        src: url("../assets/fonts/JetBrainsMono.woff2") format("woff2");
+      }
+
       :root {
-        color-scheme: light dark;
-        --bg: #ffffff;
-        --ink: #221419;
-        --muted: #7a6970;
-        --hairline: #e8dee2;
-        --surface-2: #f3edef;
-        --brand: #8e1637;
+        color-scheme: light;
+
+        --x-brand: #8e1637;
+        --x-on-brand: #ffffff;
+        --x-brand-text: #8e1637;
+        --x-brand-tint: #f7e9ee;
+        --x-header-bg: #8e1637;
+        --x-header-ink: #ffffff;
+        --x-surface: #ffffff;
+        --x-surface-2: #f3edef;
+        --x-ink: #221419;
+        --x-body: #46363d;
+        --x-muted: #7a6970;
+        --x-hairline: #e8dee2;
+        --x-border-strong: #c3b2ba;
+        --x-focus: #8e1637;
+
+        --x-font-ui: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --x-font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --x-font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+        --x-w-h1: 700;
+
+        --x-r-ctl: 0px;
+        --x-r-card: 0px;
+        --x-shadow-card: 0 1px 1px rgba(24, 12, 17, 0.02);
+
+        --x-ease: cubic-bezier(0, 0.78, 0.28, 1);
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #211a1e;
-          --ink: #f5eef1;
-          --muted: #a2929a;
-          --hairline: #372c32;
-          --surface-2: #2a2126;
-          --brand: #e58aa2;
-        }
+
+      :root[data-qux='qu-dark'] {
+        color-scheme: dark;
+
+        --x-brand-text: #e58aa2;
+        --x-brand-tint: #2e1720;
+        --x-header-bg: #5f0f26;
+        --x-surface: #211a1e;
+        --x-surface-2: #2a2126;
+        --x-ink: #f5eef1;
+        --x-body: #d8ccd1;
+        --x-muted: #a2929a;
+        --x-hairline: #372c32;
+        --x-border-strong: #55464e;
+        --x-focus: #e58aa2;
+        /* skin.css says none; a no-op shadow here so it can sit in a list */
+        --x-shadow-card: 0 0 transparent;
       }
-      * { box-sizing: border-box; }
+
+      :root[data-qux^='acm-'] {
+        --x-brand: #3ae4d1;
+        --x-on-brand: #010000;
+        --x-header-bg: #010000;
+        --x-header-ink: #fbfafb;
+
+        --x-font-ui: "Lexend", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --x-font-display: "Poppins", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --x-font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+        --x-w-h1: 800;
+
+        --x-r-ctl: 999px;
+        --x-shadow-card: 0 0 transparent;
+      }
+
+      :root[data-qux='acm-light'] {
+        --x-brand-text: #17756a;
+        --x-brand-tint: #e0f8f5;
+        --x-surface: #ffffff;
+        --x-surface-2: #f1f0f1;
+        --x-ink: #010000;
+        --x-body: #373637;
+        --x-muted: #706d70;
+        --x-hairline: #e2e0e2;
+        --x-border-strong: #373637;
+        --x-focus: #17756a;
+      }
+
+      :root[data-qux='acm-dark'] {
+        color-scheme: dark;
+
+        --x-brand-text: #3ae4d1;
+        --x-brand-tint: #0d2724;
+        --x-surface: #101312;
+        --x-surface-2: #1a1d1c;
+        --x-ink: #fbfafb;
+        --x-body: #d6d4d6;
+        --x-muted: #9c999c;
+        --x-hairline: #262a29;
+        --x-border-strong: #4c504e;
+        --x-focus: #3ae4d1;
+      }
+
+      /* QU is sharp-cornered everywhere, switches and swatches included, as
+         it is on the page. ACM keeps its pill-and-square language. */
+      :root[data-qux^='qu-'] body * {
+        border-radius: 0 !important;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      /* The popup window is the card: Chrome draws its frame and shadow. */
+      html {
+        background: var(--x-surface);
+      }
       body {
-        width: 268px;
+        width: 320px;
         margin: 0;
-        padding: 16px;
-        background: var(--bg);
-        color: var(--ink);
-        font: 400 13px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+        background: var(--x-surface);
+        color: var(--x-body);
+        font: 400 16px var(--x-font-ui);
+        -webkit-font-smoothing: antialiased;
       }
-      h1 {
-        font-size: 14px;
-        font-weight: 700;
-        margin: 0 0 2px;
+      h1,
+      p {
+        margin: 0;
       }
-      .sub {
-        font-size: 11.5px;
-        color: var(--muted);
-        margin: 0 0 16px;
-      }
-      fieldset {
-        border: 0;
-        margin: 0 0 14px;
-        padding: 0;
-      }
-      legend {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 6px;
-        padding: 0;
-      }
-      .seg {
-        display: flex;
-        border: 1px solid var(--hairline);
-        border-radius: 6px;
-        overflow: hidden;
-      }
-      .seg button {
-        flex: 1;
-        border: 0;
-        background: none;
-        color: var(--ink);
-        font: 600 12px/1 inherit;
-        padding: 9px 6px;
+      button {
+        margin: 0;
+        font: inherit;
         cursor: pointer;
       }
-      .seg button:hover { background: var(--surface-2); }
-      .seg button[aria-pressed="true"] {
-        background: var(--brand);
-        color: #fff;
+      :focus-visible {
+        outline: 2px solid var(--x-focus);
+        outline-offset: 2px;
       }
-      .seg button:focus-visible {
-        outline: 2px solid var(--brand);
-        outline-offset: -2px;
+
+      /* --- Header band --- */
+
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px;
+        background: var(--x-header-bg);
+      }
+      .head-text {
+        flex: 1;
+        min-width: 0;
+      }
+      .title {
+        font: var(--x-w-h1) 17px/1.2 var(--x-font-display);
+        color: var(--x-header-ink);
+      }
+      .subtitle {
+        margin-top: 3px;
+        font: 400 12px/1.5 var(--x-font-ui);
+        color: var(--x-header-ink);
+        opacity: 0.82;
+      }
+      .status {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border: 1px solid color-mix(in srgb, var(--x-header-ink) 30%, transparent);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--x-header-ink) 16%, transparent);
+        font: 600 11px/1 var(--x-font-ui);
+        color: var(--x-header-ink);
+      }
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #8fd4a5;
+      }
+      :root[data-enabled='off'] .status {
+        background: color-mix(in srgb, var(--x-header-ink) 8%, transparent);
+      }
+      :root[data-enabled='off'] .status-dot {
+        background: color-mix(in srgb, var(--x-header-ink) 50%, transparent);
+      }
+
+      /* Copy that changes with a setting: both variants live here, the root
+         attribute picks one. */
+      :root[data-enabled='on'] .if-disabled,
+      :root[data-enabled='off'] .if-enabled,
+      :root[data-anim='on'] .if-still,
+      :root[data-anim='off'] .if-animated {
+        display: none;
+      }
+
+      /* --- Settings --- */
+
+      .body {
+        padding: 6px 16px 4px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+      }
+      .row-text {
+        flex: 1;
+        min-width: 0;
+      }
+      .row-label {
+        font: 600 14px/1.3 var(--x-font-ui);
+        color: var(--x-ink);
+      }
+      .row-hint {
+        margin-top: 2px;
+        font: 400 12px/1.5 var(--x-font-ui);
+        color: var(--x-muted);
+      }
+      .rule {
+        border-bottom: 1px solid var(--x-hairline);
+      }
+
+      .switch {
+        position: relative;
+        flex: none;
+        width: 40px;
+        height: 24px;
+        padding: 0;
+        border: 1px solid var(--x-border-strong);
+        border-radius: 999px;
+        background: var(--x-surface-2);
+      }
+      .switch[aria-checked='true'] {
+        border-color: var(--x-brand);
+        background: var(--x-brand);
+      }
+      .knob {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: var(--x-muted);
+      }
+      .switch[aria-checked='true'] .knob {
+        background: var(--x-on-brand);
+        transform: translateX(16px);
+      }
+
+      /* Restyle off: the rest stays readable but inactive. */
+      .settings[inert] {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .group {
+        padding: 14px 0 12px;
+      }
+      .group-label {
+        margin-bottom: 10px;
+        font: 600 11px/1 var(--x-font-ui);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--x-muted);
+      }
+
+      .themes {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 8px;
+      }
+      .theme {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 52px;
+        padding: 10px 12px;
+        border: 1px solid var(--x-hairline);
+        border-radius: var(--x-r-card);
+        background: var(--x-surface);
+        text-align: start;
+      }
+      .theme[aria-pressed='true'] {
+        padding: 9px 11px;
+        border: 2px solid var(--x-brand);
+        background: var(--x-brand-tint);
+      }
+      .swatch {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+      }
+      .theme[data-value='qu'] .swatch {
+        background: #8e1637;
+      }
+      .theme[data-value='acm'] .swatch {
+        background: #3ae4d1;
+      }
+      .theme-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        min-width: 0;
+      }
+      .theme-name {
+        font: 600 13px/1.2 var(--x-font-ui);
+        color: var(--x-ink);
+      }
+      .theme-sub {
+        font: 400 11px/1.3 var(--x-font-ui);
+        color: var(--x-muted);
+      }
+
+      .modes {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 2px;
+        padding: 3px;
+        border-radius: var(--x-r-ctl);
+        background: var(--x-surface-2);
+      }
+      .mode {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 34px;
+        padding: 0 6px;
+        border: 0;
+        border-radius: var(--x-r-ctl);
+        background: transparent;
+        font: 500 13px/1 var(--x-font-ui);
+        color: var(--x-muted);
+      }
+      .mode[aria-pressed='true'] {
+        background: var(--x-surface);
+        font-weight: 600;
+        color: var(--x-brand-text);
+        box-shadow: var(--x-shadow-card), 0 0 0 1px var(--x-hairline);
+      }
+      .mode-icon {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        background: currentColor;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+      }
+      .mode[data-value='auto'] .mode-icon {
+        -webkit-mask-image: url("../assets/icons/palette.svg");
+        mask-image: url("../assets/icons/palette.svg");
+      }
+      .mode[data-value='light'] .mode-icon {
+        -webkit-mask-image: url("../assets/icons/sun.svg");
+        mask-image: url("../assets/icons/sun.svg");
+      }
+      .mode[data-value='dark'] .mode-icon {
+        -webkit-mask-image: url("../assets/icons/moon.svg");
+        mask-image: url("../assets/icons/moon.svg");
+      }
+
+      /* --- Footer --- */
+
+      .foot {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 16px 14px;
+        border-top: 1px solid var(--x-hairline);
+        background: var(--x-surface-2);
       }
       .note {
-        font-size: 11px;
-        line-height: 1.6;
-        color: var(--muted);
-        border-top: 1px solid var(--hairline);
-        padding-top: 12px;
-        margin: 0;
+        font: 400 11.5px/1.55 var(--x-font-ui);
+        color: var(--x-muted);
+      }
+      .foot-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .version {
+        font: 400 11px/1 var(--x-font-mono);
+        color: var(--x-muted);
+      }
+      .credit {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font: 400 11px/1 var(--x-font-ui);
+        color: var(--x-muted);
+      }
+      .wordmark {
+        font: 800 12px/1 "Poppins", sans-serif;
+        color: var(--x-ink);
+      }
+
+      /* State changes ease in over 160ms — not while the popup opens (the
+         stored state paints first), and not with Animations off. */
+      @media (prefers-reduced-motion: no-preference) {
+        :root[data-ready][data-anim='on'] :is(.switch, .knob, .theme, .mode, .settings) {
+          transition:
+            background-color 160ms var(--x-ease),
+            border-color 160ms var(--x-ease),
+            color 160ms var(--x-ease),
+            transform 160ms var(--x-ease),
+            opacity 160ms var(--x-ease);
+        }
       }
     </style>
+    <script src="popup.js"></script>
   </head>
   <body>
-    <h1>myQU Banner</h1>
-    <p class="sub">Restyles mybanner.qu.edu.qa in place.</p>
-
-    <fieldset>
-      <legend>Restyle this site</legend>
-      <div class="seg" id="enabled">
-        <button type="button" data-value="on">On</button>
-        <button type="button" data-value="off">Off</button>
+    <header class="head">
+      <div class="head-text">
+        <h1 class="title">ACM Banner Redesign</h1>
+        <p class="subtitle">Restyles mybanner.qu.edu.qa in place.</p>
       </div>
-    </fieldset>
+      <span class="status">
+        <span class="status-dot"></span>
+        <span class="if-enabled">On</span>
+        <span class="if-disabled">Off</span>
+      </span>
+    </header>
 
-    <fieldset>
-      <legend>Theme</legend>
-      <div class="seg" id="theme">
-        <button type="button" data-value="qu">QU maroon</button>
-        <button type="button" data-value="acm">ACM mint</button>
+    <main class="body">
+      <div class="row rule">
+        <div class="row-text">
+          <div class="row-label" id="enabled-label">Restyle this site</div>
+          <div class="row-hint" id="enabled-hint">
+            <span class="if-enabled">Active on this tab.</span>
+            <span class="if-disabled">Banner is showing its original design.</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="switch"
+          id="enabled"
+          role="switch"
+          aria-checked="true"
+          aria-labelledby="enabled-label"
+          aria-describedby="enabled-hint"
+        >
+          <span class="knob"></span>
+        </button>
       </div>
-    </fieldset>
 
-    <fieldset>
-      <legend>Appearance</legend>
-      <div class="seg" id="mode">
-        <button type="button" data-value="auto">Auto</button>
-        <button type="button" data-value="light">Light</button>
-        <button type="button" data-value="dark">Dark</button>
+      <div class="settings" id="settings">
+        <div class="group rule">
+          <div class="group-label" id="theme-label">Theme</div>
+          <div class="themes" id="theme" role="group" aria-labelledby="theme-label">
+            <button type="button" class="theme" data-value="qu" aria-pressed="true">
+              <span class="swatch"></span>
+              <span class="theme-text">
+                <span class="theme-name">QU maroon</span>
+                <span class="theme-sub">University colours</span>
+              </span>
+            </button>
+            <button type="button" class="theme" data-value="acm" aria-pressed="false">
+              <span class="swatch"></span>
+              <span class="theme-text">
+                <span class="theme-name">ACM mint</span>
+                <span class="theme-sub">Chapter colours</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="group rule">
+          <div class="group-label" id="mode-label">Appearance</div>
+          <div class="modes" id="mode" role="group" aria-labelledby="mode-label">
+            <button type="button" class="mode" data-value="auto" aria-pressed="false">
+              <span class="mode-icon"></span>Auto
+            </button>
+            <button type="button" class="mode" data-value="light" aria-pressed="true">
+              <span class="mode-icon"></span>Light
+            </button>
+            <button type="button" class="mode" data-value="dark" aria-pressed="false">
+              <span class="mode-icon"></span>Dark
+            </button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-text">
+            <div class="row-label" id="motion-label">Animations</div>
+            <div class="row-hint" id="motion-hint">
+              <span class="if-animated">Menus and panels open with a short fade.</span>
+              <span class="if-still">Everything changes instantly.</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="switch"
+            id="motion"
+            role="switch"
+            aria-checked="true"
+            aria-labelledby="motion-label"
+            aria-describedby="motion-hint"
+          >
+            <span class="knob"></span>
+          </button>
+        </div>
       </div>
-    </fieldset>
+    </main>
 
-    <p class="note">
-      Turning it off hands the page back to Banner untouched, and reloads.
-      Page content always stays exactly as the University publishes it.
-    </p>
-
-    <script src="popup.js"></script>
+    <footer class="foot">
+      <p class="note">
+        Turning it off returns the page to Banner untouched, and reloads it. Page content
+        always stays exactly as the University publishes it.
+      </p>
+      <div class="foot-row">
+        <span class="version" id="version"></span>
+        <span class="credit">Built by <span class="wordmark">&lt;ACM.QU /&gt;</span></span>
+      </div>
+    </footer>
   </body>
 </html>

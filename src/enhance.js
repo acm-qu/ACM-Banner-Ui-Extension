@@ -40,11 +40,15 @@
   root.classList.add(isMenuPage ? 'qu-menu' : 'qu-leaf');
   if (menu === 'bmenu.P_MainMnu') root.classList.add('qu-home');
 
+  // The extension's release: the footer shows it and __quEnhancer reports it.
+  // Bump it together with "version" in manifest.json.
+  const VERSION = '0.1.0';
+
   // --- Theme, stamped before first paint ---
 
-  const DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en', enabled: true };
+  const DEFAULTS = { theme: 'qu', mode: 'light', lang: 'en', enabled: true, motion: 'on' };
 
-  function stampTheme({ theme, mode, lang }) {
+  function stampTheme({ theme, mode, lang, motion }) {
     const dark =
       mode === 'dark' ||
       (mode === 'auto' &&
@@ -54,6 +58,9 @@
     root.dataset.quxTheme = theme;
     root.dataset.quxMode = mode;
     root.dataset.uilang = lang;
+    // The popup's Animations switch. A data attribute, not a class: the
+    // observer only watches class, so this never re-arms a pass.
+    root.dataset.quxMotion = motion === 'off' ? 'off' : 'on';
     root.classList.toggle('qu-ar', lang === 'ar');
   }
 
@@ -98,17 +105,6 @@
     }
   });
 
-  function savePrefs(patch) {
-    prefs = Object.assign({}, prefs, patch);
-    stampTheme(prefs);
-    try {
-      chrome.storage.sync.set(patch);
-    } catch (e) {
-      /* storage unavailable — the stamp above still applies for this page */
-    }
-    syncSwitcher();
-  }
-
   try {
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'sync') return;
@@ -125,7 +121,6 @@
       }
       if (prefs.enabled === false) return;
       stampTheme(prefs);
-      syncSwitcher();
     });
   } catch (e) {
     /* no storage events available in this context */
@@ -169,8 +164,6 @@
     ['info', 'info-circle'],
     ['warn', 'alert-triangle'],
     ['error', 'alert-circle'],
-    ['sun', 'sun'],
-    ['moon', 'moon'],
     ['chevron-down', 'chevron-down'],
     ['chevron-right', 'chevron-right'],
     ['house', 'house'],
@@ -437,6 +430,19 @@
     el.dataset.quSplit = '1';
   }
 
+  /* The English half of a bilingual label, normalised for comparing two
+     labels on the same page — a tile against a breadcrumb link, say. Reads
+     the split .qu-en half when there is one; nothing is rewritten. */
+  function englishLabel(el) {
+    if (!el) return '';
+    const text = (el.querySelector('.qu-en') || el).textContent.replace(/\s+/g, ' ');
+    const i = text.search(ARABIC);
+    return (i === -1 ? text : text.slice(0, i))
+      .replace(/[\s\-–—_:|/\\،,]+$/, '')
+      .trim()
+      .toLowerCase();
+  }
+
   /* Search results and breadcrumbs already contain markup — Cascade wraps the
      matched substring in <strong>. Splitting would destroy it, so trim the
      Arabic tail in place instead: cut the first node that starts Arabic, drop
@@ -478,8 +484,9 @@
     root.classList.toggle('qu-auth', !anon);
   }
 
-  /* --- Header: the co-branded lockup and the theme switcher, the only chrome
-     the extension owns. The QU mark stays first and never smaller than the ACM
+  /* --- Header: the co-branded lockup, the only chrome the extension adds to
+     the global bar. Theme, appearance and the off switch live in the toolbar
+     popup only. The QU mark stays first and never smaller than the ACM
      mark — this is attribution, not co-ownership. --- */
 
   function buildLockup() {
@@ -495,9 +502,14 @@
     divider.className = 'qu-lockup-divider';
     divider.setAttribute('aria-hidden', 'true');
 
-    const mark = document.createElement('span');
+    // The ACM mark links to the chapter's site, in a new tab so the Banner
+    // session stays where it was. noreferrer: no Banner URL goes with it.
+    const mark = document.createElement('a');
     mark.className = 'qu-lockup-mark';
-    mark.setAttribute('aria-hidden', 'true');
+    mark.href = 'https://qu.acm.org/';
+    mark.target = '_blank';
+    mark.rel = 'noopener noreferrer';
+    mark.setAttribute('aria-label', 'ACM QU (opens in a new tab)');
 
     const word = document.createElement('span');
     word.className = 'qu-lockup-word';
@@ -507,89 +519,6 @@
     wrap.appendChild(mark);
     wrap.appendChild(word);
     brand.after(wrap);
-  }
-
-  let switcher = null;
-
-  function segButton(attr, value, label) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'qu-seg-btn';
-    b.dataset[attr] = value;
-    b.textContent = label;
-    return b;
-  }
-
-  function buildSwitcher() {
-    const nav = document.querySelector('#globalNav ul');
-    if (!nav || document.getElementById('qu-switch')) return;
-
-    const li = document.createElement('li');
-    li.id = 'qu-switch';
-    li.className = 'qu-switch';
-
-    const themeSeg = document.createElement('span');
-    themeSeg.className = 'qu-seg';
-    themeSeg.setAttribute('role', 'group');
-    themeSeg.setAttribute('aria-label', 'Theme');
-    themeSeg.appendChild(segButton('quTheme', 'qu', 'QU'));
-    themeSeg.appendChild(segButton('quTheme', 'acm', 'ACM'));
-
-
-    const offBtn = document.createElement('button');
-    offBtn.type = 'button';
-    offBtn.className = 'qu-off-btn';
-    offBtn.dataset.quOff = '';
-    offBtn.title = 'Turn the redesign off for this site';
-    offBtn.setAttribute('aria-label', offBtn.title);
-
-    const modeBtn = document.createElement('button');
-    modeBtn.type = 'button';
-    modeBtn.className = 'qu-mode-btn';
-    modeBtn.dataset.quMode = '';
-    modeBtn.setAttribute('aria-label', 'Change appearance');
-
-    li.appendChild(themeSeg);
-    li.appendChild(modeBtn);
-    li.appendChild(offBtn);
-    nav.appendChild(li); // sits after Sign Out | Help
-    switcher = li;
-
-    li.addEventListener('click', (e) => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (btn.dataset.quTheme) savePrefs({ theme: btn.dataset.quTheme });
-      else if ('quOff' in btn.dataset) {
-        // Undoing the moved nodes in place is not worth the risk; a reload
-        // re-runs this script, which then leaves the page untouched.
-        savePrefs({ enabled: false });
-        location.reload();
-      } else if ('quMode' in btn.dataset) {
-        // Reads the resolved appearance rather than the stored preference, so
-        // the first click out of 'auto' always flips what is actually on screen.
-        const isDark = String(root.dataset.qux || '').endsWith('-dark');
-        savePrefs({ mode: isDark ? 'light' : 'dark' });
-      }
-    });
-
-    syncSwitcher();
-  }
-
-  function syncSwitcher() {
-    const li = switcher || document.getElementById('qu-switch');
-    if (!li) return;
-    li.querySelectorAll('[data-qu-theme]').forEach((b) => {
-      b.setAttribute('aria-pressed', String(b.dataset.quTheme === prefs.theme));
-    });
-    const mode = li.querySelector('[data-qu-mode]');
-    if (mode) {
-      const isDark = String(root.dataset.qux || '').endsWith('-dark');
-      mode.dataset.quModeValue = prefs.mode;
-      mode.title = isDark ? 'Switch to light appearance' : 'Switch to dark appearance';
-      mode.setAttribute('aria-label', mode.title);
-    }
   }
 
   /* --- The page head row. The welcome, the breadcrumb and the search are
@@ -622,13 +551,24 @@
       left.className = 'qu-headleft';
       row.appendChild(left);
     }
-    if (row.parentElement !== head) {
+
+    // Navigation sits in one place on every page: global bar → module
+    // navigation → crumb and search → content. Leaf pages already render
+    // their compact nav above #pageheader, but a drilled menu keeps its tile
+    // row in #pagebody, below it — so there the head row follows the tile
+    // row instead. Only this row moves; Cascade's tile container stays put.
+    // Home has no tile row of its own (the modules are its content), so its
+    // head row stays in #pageheader, above them.
+    const drilled = isMenuPage && !root.classList.contains('qu-home');
+    const tiles = drilled && document.getElementById('navigationcontrol');
+    if (tiles && tiles.parentElement) {
+      if (row.previousElementSibling !== tiles) tiles.after(row);
+    } else if (row.parentElement !== head) {
       const inner = head.querySelector(':scope > .pagebodydiv');
       if (inner) head.insertBefore(row, inner);
       else head.prepend(row);
     }
 
-    // trim the crumb labels first — the page heading is derived from them
     document
       .querySelectorAll('.breadCrumb a, .crumbs a, .crumbs .lastValue')
       .forEach(stripArabicTail);
@@ -650,47 +590,31 @@
     }
     if (search && search.parentElement !== row) row.appendChild(search);
 
-    if (isLeaf) buildLeafTitleRow(head, row);
-    else buildPageTitle();
+    if (isLeaf) placeIdentity(row, search);
     return row;
   }
 
-  /* Leaf pages put the heading and the identity block on their own row under
-     the crumb. .staticheaders carries only the identity — ID, name, timestamp
-     — so the heading has to come from the breadcrumb. document.title is no
-     use: three menus ship an empty title and one says "DEFAULT". */
-  function buildLeafTitleRow(head, headRow) {
-    let titleRow = document.querySelector('.qu-titlerow');
-    if (!titleRow) {
-      titleRow = document.createElement('div');
-      titleRow.className = 'qu-titlerow';
-      titleRow.appendChild(document.createElement('div')).className = 'qu-pagetitle';
-    }
-    // Same re-homing rule as the head row: it always sits directly after it,
-    // wherever Cascade has since moved that.
-    if (titleRow.previousElementSibling !== headRow) headRow.after(titleRow);
-    // Result views carry more than one .staticheaders (the server's and the
-    // one Cascade writes after the POST), which rendered the identity twice.
-    // The first is kept and re-homed; the rest are hidden, never removed.
+  /* There is no page title of our own: the breadcrumb's current chip already
+     names the page, and a second, larger copy of it only pushed the content
+     down. The identity block — ID, name, timestamp — rides at the end of the
+     head row, just before the search.
+
+     Result views carry more than one .staticheaders (the server's and the one
+     Cascade writes after the POST), which rendered the identity twice. The
+     first is kept and re-homed; the rest are hidden, never removed. */
+  function placeIdentity(row, search) {
     const identities = document.querySelectorAll('.staticheaders');
     const identity = identities[0];
     for (let i = 1; i < identities.length; i++) {
       identities[i].dataset.quIdentityDupe = '1';
     }
-    if (identity) {
-      delete identity.dataset.quIdentityDupe;
-      if (identity.parentElement !== titleRow) titleRow.appendChild(identity);
-      splitIdentity(identity);
+    if (!identity) return;
+    delete identity.dataset.quIdentityDupe;
+    const before = search && search.parentElement === row ? search : null;
+    if (identity.parentElement !== row || identity.nextElementSibling !== before) {
+      row.insertBefore(identity, before);
     }
-
-    const title = titleRow.querySelector('.qu-pagetitle');
-    const selected = document.querySelector('.breadCrumb a.selected, .crumbs .lastValue');
-    const label = selected ? selected.textContent.replace(/\s+/g, ' ').trim() : '';
-    if (!label || title.dataset.quText === label) return;
-    title.dataset.quText = label;
-    title.textContent = label;
-    delete title.dataset.quSplit;
-    splitBilingual(title);
+    splitIdentity(identity);
   }
 
   /* "######### STUDENT NAME<br>Aug 21, 2026 07:30 pm" — one node, two facts.
@@ -752,48 +676,20 @@
     el.after(sub);
   }
 
-  /* Drilled menus have no welcome of their own, so the title is the current
-     menu's name, which the breadcrumb already holds. The order down the page
-     is crumb → title → cards, so the title cannot sit in the head row beside
-     the crumb; it goes into #pagebody instead. */
-  function buildPageTitle() {
-    const atHome = root.classList.contains('qu-home');
-    const pagebody = document.getElementById('pagebody');
-    let row = document.querySelector('#pagebody > .qu-titlerow');
-    const selected = document.querySelector('#crumb .breadCrumb a.selected');
-
-    if (atHome || !selected || !pagebody) {
-      if (row) row.remove();
-      return;
-    }
-
-    if (!row) {
-      row = document.createElement('div');
-      row.className = 'qu-titlerow';
-      const t = document.createElement('div');
-      t.className = 'qu-pagetitle';
-      row.appendChild(t);
-    }
-    const anchor =
-      pagebody.querySelector(':scope > #contentHolder') ||
-      pagebody.querySelector(':scope > #contentBelt');
-    if (anchor && row.nextElementSibling !== anchor) pagebody.insertBefore(row, anchor);
-    else if (!anchor && row.parentElement !== pagebody) pagebody.appendChild(row);
-
-    const title = row.querySelector('.qu-pagetitle');
-    const label = selected.textContent.replace(/\s+/g, ' ').trim();
-    if (!label || title.dataset.quText === label) return;
-    title.dataset.quText = label;
-    title.textContent = label;
-    delete title.dataset.quSplit;
-    splitBilingual(title);
-  }
-
   /* The footer attribution — extension-owned, and the only place the ACM
      wordmark appears outside the header lockup. */
   function buildFooter() {
     const foot = document.getElementById('pagefooter');
     if (!foot || foot.querySelector('.qu-attrib')) return;
+    // The footer names the extension's release where Banner names its own.
+    // Banner's .reltext stays in the DOM, untouched, and the sheet hides it,
+    // so turning the extension off brings Banner's release number back.
+    const release = document.createElement('span');
+    release.className = 'qu-release';
+    release.textContent = 'Release: ' + VERSION;
+    const banner = foot.querySelector('.reltext');
+    if (banner) banner.after(release);
+    else foot.appendChild(release);
     const wrap = document.createElement('span');
     wrap.className = 'qu-attrib';
     const text = document.createElement('span');
@@ -1177,6 +1073,39 @@
     });
   }
 
+  /* --- Spacer breaks. A <br> between two blocks is spacing, not a line
+     break — the block already ends the line — and it adds an empty line no
+     rhythm token accounts for. Banner leaves them after tables and forms on
+     about half its pages. A run of breaks is tagged as spacing only when a
+     block (or the container's edge) bounds it on both sides; a break inside
+     running text is left alone. That is why this is not a CSS sibling rule:
+     `table + br` and `br + br` skip text nodes, so they would also match
+     breaks between lines of server text and merge them. --- */
+
+  const BLOCK_TAGS = /^(TABLE|FORM|DIV|P|UL|OL|DL|HR|H[1-6]|FIELDSET|BLOCKQUOTE|CENTER|PRE)$/;
+
+  function tagSpacerBreaks() {
+    // whitespace, comments, hidden inputs and other breaks sit inside a run
+    const inRun = (n) =>
+      !!n &&
+      ((n.nodeType === Node.TEXT_NODE && !n.nodeValue.trim()) ||
+        n.nodeType === Node.COMMENT_NODE ||
+        n.nodeName === 'BR' ||
+        (n.nodeName === 'INPUT' && n.type === 'hidden'));
+    const bounds = (n) => !n || (n.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.test(n.nodeName));
+
+    document.querySelectorAll('.pagebodydiv br:not([data-qu-br])').forEach((br) => {
+      let before = br.previousSibling;
+      while (inRun(before)) before = before.previousSibling;
+      let after = br.nextSibling;
+      while (inRun(after)) after = after.nextSibling;
+      const spacer = bounds(before) && bounds(after);
+      for (let n = before ? before.nextSibling : br.parentNode.firstChild; n && n !== after; n = n.nextSibling) {
+        if (n.nodeName === 'BR') n.dataset.quBr = spacer ? 'gap' : 'keep';
+      }
+    });
+  }
+
   /* --- Message states. .warningtext and .errortext do double duty in Banner:
      feedback about something just done, and "there is nothing here". The first
      stays a banner, the second becomes a centred empty state, and the page
@@ -1410,25 +1339,38 @@
     print.addEventListener('click', () => window.print());
     rail.appendChild(print);
 
-    const note = document.createElement('span');
-    note.className = 'qu-rail-note';
-    note.textContent =
-      "Rail is the redesign's rendering of the server's \"-Top-\" anchor links.";
-    rail.appendChild(note);
-
-    // Wrap the existing content so the rail sits beside one column rather than
-    // spanning a grid whose rows it would stretch.
+    // The transcript and everything after it becomes one column beside the
+    // rail. What comes before it — the notice, Banner's own jump links — stays
+    // where it is and spans both columns, in the order Banner sends it.
+    let start = table;
+    while (start.parentElement && start.parentElement !== body) start = start.parentElement;
     const main = document.createElement('div');
     main.className = 'qu-transcript-main';
-    while (body.firstChild) main.appendChild(body.firstChild);
-    body.appendChild(main);
-    body.prepend(rail);
+    body.insertBefore(main, start);
+    while (start) {
+      const next = start.nextSibling;
+      main.appendChild(start);
+      start = next;
+    }
+    body.insertBefore(rail, main);
     body.classList.add('qu-has-rail');
+
+    // The body is now a grid, and loose text in a grid becomes an anonymous
+    // item in a cell of its own. Wrap it so it spans the columns like the rest
+    // of what sits above the transcript. The &nbsp;&nbsp; runs between Banner's
+    // jump links are spacing that goes with those links, and is marked so.
+    Array.prototype.slice.call(body.childNodes).forEach((node) => {
+      if (node.nodeType !== Node.TEXT_NODE || /^[ \t\n\r\f]*$/.test(node.nodeValue)) return;
+      const span = document.createElement('span');
+      if (!node.nodeValue.replace(/[\s ]+/g, '')) span.dataset.quSpacer = '1';
+      node.before(span);
+      span.appendChild(node);
+    });
 
     // The rail is this redesign's rendering of the server's own "-Top-"
     // anchor links, so the originals become duplicates.
     const norm = (t) => t.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-    main.querySelectorAll('a[href^="#"]').forEach((a) => {
+    body.querySelectorAll('a[href^="#"]:not(.qu-rail-link)').forEach((a) => {
       const label = norm(a.textContent);
       if (!label) return;
       const matches = sections.some(
@@ -1556,7 +1498,7 @@
         const info = targetFromId(btn.id);
         btn.dataset.quKey = info.target;
         btn.dataset.quKind = info.isMenu ? 'menu' : info.isExternal ? 'external' : 'page';
-        applyIcon(btn, info, btn.textContent);
+        // Module tabs are words only; the icon maps serve the level-2 cards.
         splitBilingual(btn.querySelector('.menu div span, .menuSmall div div'));
       });
 
@@ -1600,21 +1542,43 @@
     // navigation, so these nodes must never be replaced.
     document.querySelectorAll('#contentBelt ul.items > li > a:not([data-qu])').forEach((a) => {
       a.dataset.qu = '1';
-      const l3 = a.querySelector('h3');
-      const name = iconFromLabel((a.getAttribute('title') || '') + ' ' + (l3 ? l3.textContent : ''));
-      if (name) a.style.setProperty('--qu-icon', 'url("' + url('assets/icons/' + name + '.svg') + '")');
-      splitBilingual(l3);
+      // Options carry no icon (a chevron in the sheet marks them), so nothing
+      // is written onto Cascade's own link but the split label.
+      splitBilingual(a.querySelector('h3'));
     });
 
-    // Mark the current module. Cascade puts no class on the active level-1
-    // tile, but menu drilling is hash-routed and the hash carries the tile's
-    // own id as pageName (depth 2) or pageReferrerId (depth 3).
-    const currentIds = [hash.get('pageReferrerId'), hash.get('pageName')].filter(Boolean);
-    // A drilled menu reached by a real page load has no hash at all, so also
-    // match the tile's decoded target against this page's own ?name=.
-    document.querySelectorAll('button.menubaseButton').forEach((btn) => {
-      const isCurrent =
-        currentIds.indexOf(btn.id) > -1 || (!!menu && btn.dataset.quKey === menu);
+    // Mark the current module — exactly one. Cascade puts no class on the
+    // active level-1 tile, so it is resolved from one source, the most
+    // specific that names a tile:
+    //   1. the hash's pageName — the tile itself at depth 2;
+    //   2. the hash's pageReferrerId — the tile, when depth 3 put a card in
+    //      pageName;
+    //   3. the breadcrumb's module link — a drilled menu loaded directly below
+    //      module level has no hash yet, and its ?name= names a submenu;
+    //   4. the page-load ?name=.
+    //
+    // ?name= comes last and is never matched alongside the others. Menu to
+    // menu navigation is client-side and leaves location.search alone, so
+    // after one drill ?name= still names the module the page was loaded on.
+    // Matching it next to the hash lit two tiles at once: load Personal
+    // Information from a leaf page's nav, click Student Registrations, and
+    // both were filled.
+    //
+    // Keys are decoded targets, not raw ids: a tile's ___UID suffix is a
+    // render counter, so the id in the hash need not match the id on screen.
+    const tiles = Array.prototype.slice.call(document.querySelectorAll('button.menubaseButton'));
+    const tileKeys = tiles.map((btn) => btn.dataset.quKey);
+    const crumbLinks = document.querySelectorAll('#crumb .breadCrumb a');
+    const crumbModule = crumbLinks.length > 1 ? englishLabel(crumbLinks[1]) : '';
+    const crumbTile = crumbModule && tiles.find((btn) => englishLabel(btn) === crumbModule);
+    const currentKey =
+      [hash.get('pageName'), hash.get('pageReferrerId')]
+        .filter(Boolean)
+        .map((id) => targetFromId(id).target)
+        .concat(crumbTile ? crumbTile.dataset.quKey : '', menu)
+        .find((key) => !!key && tileKeys.indexOf(key) > -1) || '';
+    tiles.forEach((btn) => {
+      const isCurrent = !!currentKey && btn.dataset.quKey === currentKey;
       btn.classList.toggle('qu-current', isCurrent);
       const face = btn.querySelector('.menu');
       if (face) face.classList.toggle('qu-current-face', isCurrent);
@@ -1651,14 +1615,27 @@
       );
     });
 
+    // Passes that read a table, a cell or the whole page once and then mark it
+    // done wait for the parser to finish. The observer's rAF fires between
+    // parser chunks on long pages, and a one-shot pass that ran then never
+    // looked again: the transcript rail stopped at whichever term the parser
+    // had reached, a message cell still streaming looked empty and was hidden
+    // as an icon cell, and a body not yet filled drew "nothing to show". The
+    // body stays hidden until DOMContentLoaded (reveal), so waiting costs
+    // nothing on screen.
+    const parsed = document.readyState !== 'loading';
+
     // table.datadisplaytable is used for key/value pairs and for grids alike,
     // and no selector tells them apart, so tag which shape this one is.
-    document.querySelectorAll('table.datadisplaytable:not([data-qu])').forEach((t) => {
-      t.dataset.qu = '1';
-      const hasHeader = !!t.querySelector('th.ddheader');
-      const hasLabel = !!t.querySelector('th.ddlabel');
-      t.dataset.quTable = hasHeader && hasLabel ? 'mixed' : hasHeader ? 'grid' : hasLabel ? 'kv' : 'plain';
-    });
+    if (parsed) {
+      document.querySelectorAll('table.datadisplaytable:not([data-qu])').forEach((t) => {
+        t.dataset.qu = '1';
+        const hasHeader = !!t.querySelector('th.ddheader');
+        const hasLabel = !!t.querySelector('th.ddlabel');
+        t.dataset.quTable =
+          hasHeader && hasLabel ? 'mixed' : hasHeader ? 'grid' : hasLabel ? 'kv' : 'plain';
+      });
+    }
 
     // Gateway pages — "select a term, submit" — are the shape of ten pages,
     // and should read as one card holding the notice, the fields and the
@@ -1735,24 +1712,192 @@
     // holding the message. Tag the icon-only cell so the sheet can drop it;
     // testing for a missing .infotext span would also hide banners whose text
     // is not wrapped in one.
-    document.querySelectorAll('td.indefault:not([data-qu-iconcell])').forEach((td) => {
-      td.dataset.quIconcell = td.textContent.trim() ? '0' : '1';
-    });
+    if (parsed) {
+      document.querySelectorAll('td.indefault:not([data-qu-iconcell])').forEach((td) => {
+        td.dataset.quIconcell = td.textContent.trim() ? '0' : '1';
+      });
 
-    shapeTables();
-    buildBalancePill();
-    classifyMessages();
+      shapeTables();
+      buildBalancePill();
+      classifyMessages();
+      tagSpacerBreaks();
+    }
 
     const overlay = document.querySelector('.findPageOverlay');
     if (overlay) enhanceSearch(overlay);
 
-    enhanceTranscript();
-    enhanceAnonymous();
-    handleBlankPage();
+    if (parsed) {
+      enhanceTranscript();
+      enhanceAnonymous();
+      handleBlankPage();
+    }
     buildLockup();
-    buildSwitcher();
     buildHeadRow();
     buildFooter();
+  }
+
+  /* --- Layout audit, for the console only: window.__quEnhancer.audit().
+     Checks the rules the sheet is built on, on whatever page is open:
+       - regions span the frame: their content meets both edges;
+       - blocks start on their stack's start edge and stay inside it;
+       - nothing visible pokes out of the frame (full-bleed bands, and
+         content inside a scrolling box, excepted);
+       - the gaps between regions are rhythm tokens; no block sits closer
+         than --x-gap-block to the block above it, whichever stack each is
+         in; and next-door blocks sit exactly one --x-gap-block apart.
+     Returns geometry and selectors only. It reads no text, logs nothing and
+     keeps nothing. Both lists empty means the page follows the system. --- */
+
+  const AUDIT_REGIONS = [
+    '#header',
+    '#navigationcontrolSmall',
+    '#navigationcontrol',
+    '.qu-headrow',
+    'html.qu-menu #pagebody > .infotextdiv',
+    'html.qu-menu:not(.qu-home) #contentHolder',
+    'html.qu-leaf .pagebodydiv',
+    '#pagefooter',
+  ];
+  const AUDIT_STACKS =
+    '.pagebodydiv, .pagebodydiv form:not([data-qu-gateway]), td.pldefault, .qu-transcript-main';
+  const AUDIT_BLOCKS =
+    ':scope > :is(table, form, .infotextdiv, .errortext, .warningtext, .qu-section-head)';
+  // Full-bleed, deliberately centred, floating, or off-screen on purpose.
+  const AUDIT_FREE =
+    '#header, #pagefooter, [data-qu-state], .qu-notice, .findPageOverlay, #helpWindow, ' +
+    '.skiplinks, .fieldlabeltextinvisible';
+
+  function audit() {
+    const rtl = getComputedStyle(root).direction === 'rtl';
+    const near = (a, b) => Math.abs(a - b) <= 1;
+    const shown = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+    };
+    const inner = (el) => {
+      const r = el.getBoundingClientRect();
+      const s = getComputedStyle(el);
+      return {
+        left: Math.round(r.left + parseFloat(s.borderLeftWidth) + parseFloat(s.paddingLeft)),
+        right: Math.round(r.right - parseFloat(s.borderRightWidth) - parseFloat(s.paddingRight)),
+      };
+    };
+    const name = (el) =>
+      el.tagName.toLowerCase() +
+      (el.id ? '#' + el.id : '') +
+      Array.prototype.slice.call(el.classList, 0, 2).map((c) => '.' + c).join('');
+    const token = (n) =>
+      Math.round(parseFloat(getComputedStyle(root).getPropertyValue('--x-gap-' + n)) || 0);
+
+    const frame = inner(document.body);
+    const regionGaps = ['top', 'nav', 'content', 'end'].map(token);
+    const blockGap = token('block');
+    const offFrame = [];
+    const gaps = [];
+    const flagged = new Set();
+    const flag = (el, left, right) => {
+      if (flagged.has(el)) return;
+      flagged.add(el);
+      offFrame.push({ sel: name(el), left: left, right: right });
+    };
+    const gap = (a, b, px) => gaps.push({ from: name(a), to: name(b), px: px });
+
+    // Regions: content meets both frame edges; the gaps between them are tokens.
+    const regions = [];
+    AUDIT_REGIONS.forEach((sel) => {
+      document.querySelectorAll(sel).forEach((el) => {
+        if (!shown(el) || regions.indexOf(el) > -1) return;
+        const e = inner(el);
+        if (!near(e.left, frame.left) || !near(e.right, frame.right)) flag(el, e.left, e.right);
+        regions.push(el);
+      });
+    });
+    const byTop = (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+    regions.sort(byTop);
+    for (let i = 1; i < regions.length; i++) {
+      const px = Math.round(
+        regions[i].getBoundingClientRect().top - regions[i - 1].getBoundingClientRect().bottom
+      );
+      if (!regionGaps.some((t) => near(px, t))) gap(regions[i - 1], regions[i], px);
+    }
+
+    // Blocks: start on their stack's start edge and stay inside it. A gateway
+    // form is a card that spaces its own insides.
+    const blocks = [];
+    document.querySelectorAll(AUDIT_STACKS).forEach((stack) => {
+      if (!shown(stack) || stack.closest('form[data-qu-gateway]')) return;
+      const box = inner(stack);
+      stack.querySelectorAll(AUDIT_BLOCKS).forEach((el) => {
+        if (!shown(el) || el.closest(AUDIT_FREE) || blocks.indexOf(el) > -1) return;
+        blocks.push(el);
+        const r = el.getBoundingClientRect();
+        const start = Math.round(rtl ? r.right : r.left);
+        const off = !near(start, rtl ? box.right : box.left) || r.left < box.left - 1 || r.right > box.right + 1;
+        if (off) flag(el, Math.round(r.left), Math.round(r.right));
+      });
+    });
+
+    // Gaps: for each block, the nearest block or region above it in the same
+    // column. Closer than a block gap is always wrong — that is a card sitting
+    // flush under the one above, wherever each lives. A section head and the
+    // table under it are one card. Between next-door siblings, with nothing
+    // else between them, the gap must be exactly one block gap.
+    const attached = (a, b) => a.classList.contains('qu-section-head') && a.nextElementSibling === b;
+    const nextDoor = (a, b) => {
+      if (a.parentElement !== b.parentElement) return false;
+      for (let n = a.nextSibling; n && n !== b; n = n.nextSibling) {
+        if (n.nodeType === Node.TEXT_NODE && n.nodeValue.replace(/[\s ]+/g, '')) return false;
+        if (n.nodeType === Node.ELEMENT_NODE && shown(n)) return false;
+      }
+      return true;
+    };
+    const candidates = regions.concat(blocks);
+    blocks.forEach((b) => {
+      const rb = b.getBoundingClientRect();
+      let above = null;
+      let aboveBottom = -Infinity;
+      candidates.forEach((a) => {
+        if (a === b || a.contains(b) || b.contains(a)) return;
+        const ra = a.getBoundingClientRect();
+        if (ra.bottom > rb.top + 1 || ra.right <= rb.left || ra.left >= rb.right) return;
+        if (ra.bottom > aboveBottom) {
+          above = a;
+          aboveBottom = ra.bottom;
+        }
+      });
+      if (!above || attached(above, b)) return;
+      const px = Math.round(rb.top - aboveBottom);
+      if (px < blockGap - 1) gap(above, b, px);
+      else if (nextDoor(above, b) && !near(px, blockGap)) gap(above, b, px);
+    });
+
+    // Anything else visible that pokes out of the frame. Positioned overlays
+    // are placed on purpose, and whatever sits inside a scrolling box is in
+    // reach by scrolling it.
+    const scrolls = (el) => {
+      for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        if (/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowX)) return true;
+      }
+      return false;
+    };
+    const all = document.body.querySelectorAll('*');
+    for (let i = 0; i < all.length && offFrame.length < 50; i++) {
+      const el = all[i];
+      if (el.closest(AUDIT_FREE)) continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      if (r.left >= frame.left - 1 && r.right <= frame.right + 1) continue;
+      const pos = getComputedStyle(el).position;
+      if (pos === 'fixed' || pos === 'absolute') continue;
+      if (el.parentElement && flagged.has(el.parentElement)) {
+        flagged.add(el); // report the outermost offender only
+        continue;
+      }
+      if (scrolls(el)) continue;
+      flag(el, Math.round(r.left), Math.round(r.right));
+    }
+
+    return { frame: frame, offFrame: offFrame, gaps: gaps };
   }
 
   /* --- Wiring. Menu drilling is client-side and hash-routed, and #contentBelt
@@ -1866,7 +2011,7 @@
   // Exposed for debugging from the console only. Holds no page data.
   Object.defineProperty(window, '__quEnhancer', {
     value: Object.freeze({
-      version: '1.0.2',
+      version: VERSION,
       LOGOUT_TRAP: LOGOUT_TRAP,
       hasCredentials: hasCredentials,
       targetFromId: targetFromId,
@@ -1876,6 +2021,7 @@
         theme: root.dataset.qux,
         lang: root.dataset.uilang,
       }),
+      audit: audit,
     }),
     configurable: true,
   });
