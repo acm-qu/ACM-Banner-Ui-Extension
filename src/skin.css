@@ -1198,16 +1198,16 @@ html.qu-x:not(.qu-home) .menubaseButton:focus-visible .menu {
   outline: 2px solid var(--x-focus) !important;
   outline-offset: 2px !important;
 }
-html.qu-x:not(.qu-home) .menubaseButton .menu.menuHighlight,
-html.qu-x:not(.qu-home) .menubaseButton.selected .menu,
-html.qu-x:not(.qu-home) .menuitem.selected .menubaseButton .menu,
+/* The current module has one source of truth: .qu-current-face, which
+   enhance.js resolves to exactly one tile per pass. Cascade's own
+   .menuHighlight / .selected are not painted — a second painter is how two
+   tiles ended up filled at once. */
 html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face {
   background: var(--x-brand) !important;
   background-color: var(--x-brand) !important;
   color: var(--x-on-brand) !important;
 }
-html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face::before,
-html.qu-x:not(.qu-home) .menubaseButton .menu.menuHighlight::before {
+html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face::before {
   background: var(--x-on-brand) !important;
 }
 html.qu-x:not(.qu-home) .descriptionText {

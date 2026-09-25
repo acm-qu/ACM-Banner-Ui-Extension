@@ -437,6 +437,19 @@
     el.dataset.quSplit = '1';
   }
 
+  /* The English half of a bilingual label, normalised for comparing two
+     labels on the same page — a tile against a breadcrumb link, say. Reads
+     the split .qu-en half when there is one; nothing is rewritten. */
+  function englishLabel(el) {
+    if (!el) return '';
+    const text = (el.querySelector('.qu-en') || el).textContent.replace(/\s+/g, ' ');
+    const i = text.search(ARABIC);
+    return (i === -1 ? text : text.slice(0, i))
+      .replace(/[\s\-–—_:|/\\،,]+$/, '')
+      .trim()
+      .toLowerCase();
+  }
+
   /* Search results and breadcrumbs already contain markup — Cascade wraps the
      matched substring in <strong>. Splitting would destroy it, so trim the
      Arabic tail in place instead: cut the first node that starts Arabic, drop
@@ -1600,15 +1613,38 @@
       splitBilingual(l3);
     });
 
-    // Mark the current module. Cascade puts no class on the active level-1
-    // tile, but menu drilling is hash-routed and the hash carries the tile's
-    // own id as pageName (depth 2) or pageReferrerId (depth 3).
-    const currentIds = [hash.get('pageReferrerId'), hash.get('pageName')].filter(Boolean);
-    // A drilled menu reached by a real page load has no hash at all, so also
-    // match the tile's decoded target against this page's own ?name=.
-    document.querySelectorAll('button.menubaseButton').forEach((btn) => {
-      const isCurrent =
-        currentIds.indexOf(btn.id) > -1 || (!!menu && btn.dataset.quKey === menu);
+    // Mark the current module — exactly one. Cascade puts no class on the
+    // active level-1 tile, so it is resolved from one source, the most
+    // specific that names a tile:
+    //   1. the hash's pageName — the tile itself at depth 2;
+    //   2. the hash's pageReferrerId — the tile, when depth 3 put a card in
+    //      pageName;
+    //   3. the breadcrumb's module link — a drilled menu loaded directly below
+    //      module level has no hash yet, and its ?name= names a submenu;
+    //   4. the page-load ?name=.
+    //
+    // ?name= comes last and is never matched alongside the others. Menu to
+    // menu navigation is client-side and leaves location.search alone, so
+    // after one drill ?name= still names the module the page was loaded on.
+    // Matching it next to the hash lit two tiles at once: load Personal
+    // Information from a leaf page's nav, click Student Registrations, and
+    // both were filled.
+    //
+    // Keys are decoded targets, not raw ids: a tile's ___UID suffix is a
+    // render counter, so the id in the hash need not match the id on screen.
+    const tiles = Array.prototype.slice.call(document.querySelectorAll('button.menubaseButton'));
+    const tileKeys = tiles.map((btn) => btn.dataset.quKey);
+    const crumbLinks = document.querySelectorAll('#crumb .breadCrumb a');
+    const crumbModule = crumbLinks.length > 1 ? englishLabel(crumbLinks[1]) : '';
+    const crumbTile = crumbModule && tiles.find((btn) => englishLabel(btn) === crumbModule);
+    const currentKey =
+      [hash.get('pageName'), hash.get('pageReferrerId')]
+        .filter(Boolean)
+        .map((id) => targetFromId(id).target)
+        .concat(crumbTile ? crumbTile.dataset.quKey : '', menu)
+        .find((key) => !!key && tileKeys.indexOf(key) > -1) || '';
+    tiles.forEach((btn) => {
+      const isCurrent = !!currentKey && btn.dataset.quKey === currentKey;
       btn.classList.toggle('qu-current', isCurrent);
       const face = btn.querySelector('.menu');
       if (face) face.classList.toggle('qu-current-face', isCurrent);
