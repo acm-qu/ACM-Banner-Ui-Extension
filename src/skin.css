@@ -2290,11 +2290,6 @@ html.qu-x .qu-print::before {
 html.qu-x .qu-print:hover {
   background: var(--x-brand-hover) !important;
 }
-html.qu-x .qu-rail-note {
-  font: 400 11.5px/1.6 var(--x-font-ui) !important;
-  color: var(--x-muted) !important;
-  padding: 12px 4px 0 !important;
-}
 
 /* --- out of table layout, into grid rows -------------------------------- */
 
@@ -2370,8 +2365,11 @@ html.qu-x.qu-transcript tr[data-qu-row='section'] > th.ddtitle::before {
   background: var(--x-brand-text) !important;
   transform: rotate(45deg) !important;
 }
-/* the server's "-Top-" back-link is kept, just quietened */
-html.qu-x.qu-transcript th.ddtitle a {
+/* A link inside a section heading that the rail does not replace is kept,
+   just quietened. The rail's duplicates — the "-Top-" back-links among them —
+   are excluded here: this selector outranks [data-qu-anchor-dupe], so without
+   the :not() it painted them back in. */
+html.qu-x.qu-transcript th.ddtitle a:not([data-qu-anchor-dupe]) {
   display: inline !important;
   font: 400 12px/1.4 var(--x-font-ui) !important;
   color: var(--x-muted) !important;

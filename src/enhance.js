@@ -1410,12 +1410,6 @@
     print.addEventListener('click', () => window.print());
     rail.appendChild(print);
 
-    const note = document.createElement('span');
-    note.className = 'qu-rail-note';
-    note.textContent =
-      "Rail is the redesign's rendering of the server's \"-Top-\" anchor links.";
-    rail.appendChild(note);
-
     // Wrap the existing content so the rail sits beside one column rather than
     // spanning a grid whose rows it would stretch.
     const main = document.createElement('div');
