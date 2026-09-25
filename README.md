@@ -61,7 +61,7 @@ across machines.
 | Area | Treatment |
 |---|---|
 | **Layout** | Every page shares one frame and one spacing scale: the same left and right edges from the header to the footer, and the same gaps between regions and blocks, on every page type and screen width |
-| **Global bar** | A 64px band with a co-branded lockup and Sign Out / Help. Theme, appearance and the on/off switch are in the toolbar popup |
+| **Global bar** | An 84px band with a co-branded lockup and Sign Out / Help. Theme, appearance and the on/off switch are in the toolbar popup |
 | **Menu pages** | On Home the five modules become a grid of title-and-description cards. Drilling into a module shows the module row → breadcrumb and search → a 3-column card grid with per-item icons, badges naming the destination on links that leave the portal, and a level-3 panel under the open card |
 | **Leaf pages** | Compact navigation, the breadcrumb with the identity block beside it, status banners, form cards, and both Banner table shapes — key/value and grid — with sticky headers, tabular numerals and section headings |
 | **Arabic labels** | Where the site puts English and Arabic in one run, each half gets its own font, size and text direction |

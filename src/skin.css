@@ -580,7 +580,9 @@ html.qu-x [dir='rtl'] {
 
 /* ==========================================================================
    3. GLOBAL BAR — lockup, sign out / help, switcher
-   A 64px full-bleed band whose content meets the frame (section 2), gap 16.
+   An 84px full-bleed band whose content meets the frame (section 2), gap 16.
+   The marks are drawn 1.5x the design's lockup size (QU 60px, ACM 45px),
+   with the same 12px of air above and below as the 40px mark had in 64px.
    Order across it: QU mark · divider · ACM mark · "Redesign" ····· Sign Out
    · Help. Theme, appearance and the off switch live in the toolbar popup
    only. The search is not in this bar — it sits in the head row, section 5.
@@ -589,8 +591,8 @@ html.qu-x [dir='rtl'] {
 html.qu-x #header {
   background: var(--x-header-bg) !important;
   background-image: none !important;
-  height: 64px !important;
-  min-height: 64px !important;
+  height: 84px !important;
+  min-height: 84px !important;
   padding-block: 0 !important;
   display: flex !important;
   align-items: center !important;
@@ -607,16 +609,16 @@ html.qu-x .institutionalBranding { order: 1 !important; }
 html.qu-x .qu-lockup-acm { order: 2 !important; }
 html.qu-x #globalNav { order: 3 !important; margin-inline-start: auto !important; }
 
-/* QU mark: 40px tall, first, and never smaller than the ACM mark.
-   The source image is 352x249, so 40px tall is ~57px wide. */
+/* QU mark: 60px tall, first, and never smaller than the ACM mark.
+   The source image is 352x249, so 60px tall is 85px wide. */
 html.qu-x .institutionalBranding {
   position: static !important;
   inset: auto !important;
   vertical-align: middle !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 57px !important;
-  height: 40px !important;
+  width: 85px !important;
+  height: 60px !important;
   flex: none !important;
   align-self: center !important;
   display: block !important;
@@ -635,13 +637,13 @@ html.qu-x .qu-lockup-acm {
 }
 html.qu-x .qu-lockup-divider {
   width: 1px !important;
-  height: 32px !important;
+  height: 48px !important;
   flex: none !important;
   background: color-mix(in srgb, var(--x-header-ink) 35%, transparent) !important;
 }
 html.qu-x .qu-lockup-mark {
-  width: 30px !important;
-  height: 30px !important;
+  width: 45px !important;
+  height: 45px !important;
   flex: none !important;
   background-image: var(--qu-acm-mark) !important;
   background-size: contain !important;
@@ -3122,7 +3124,7 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x #header {
     flex-wrap: wrap !important;
     height: auto !important;
-    min-height: 64px !important;
+    min-height: 84px !important;
     padding-block: 10px !important;
   }
   html.qu-x #search {
