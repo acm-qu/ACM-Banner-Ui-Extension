@@ -1824,7 +1824,9 @@ html.qu-x td.pldefault {
    No block may zero its own top margin: that one declaration outranks the
    stack rule, and is how the transcript's first card came to sit flush under
    its notice while the rail beside it kept its gap. */
-html.qu-x :where(.pagebodydiv, .pagebodydiv form, td.pldefault) > table.plaintable {
+html.qu-x
+  :where(.pagebodydiv, .pagebodydiv form:not([data-qu-gateway]), td.pldefault, .qu-transcript-main)
+  > table.plaintable {
   margin-block-start: var(--x-gap-block) !important;
 }
 html.qu-x.qu-leaf .pagebodydiv {
