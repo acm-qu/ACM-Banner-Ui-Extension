@@ -498,9 +498,14 @@
     divider.className = 'qu-lockup-divider';
     divider.setAttribute('aria-hidden', 'true');
 
-    const mark = document.createElement('span');
+    // The ACM mark links to the chapter's site, in a new tab so the Banner
+    // session stays where it was. noreferrer: no Banner URL goes with it.
+    const mark = document.createElement('a');
     mark.className = 'qu-lockup-mark';
-    mark.setAttribute('aria-hidden', 'true');
+    mark.href = 'https://qu.acm.org/';
+    mark.target = '_blank';
+    mark.rel = 'noopener noreferrer';
+    mark.setAttribute('aria-label', 'ACM QU (opens in a new tab)');
 
     const word = document.createElement('span');
     word.className = 'qu-lockup-word';

@@ -696,6 +696,11 @@ html.qu-x[data-qux^='acm-'] .qu-lockup-word {
   font-weight: 700 !important;
   color: #3ae4d1 !important;
 }
+/* The band is brand-coloured, so a focus ring in the brand colour vanishes
+   into it; inside the band the ring takes the band's ink. */
+html.qu-x #header :focus-visible {
+  outline-color: var(--x-header-ink) !important;
+}
 
 /* Sign Out / Help — plain text, no icons, vertically centred in the band. */
 html.qu-x #globalNav {
