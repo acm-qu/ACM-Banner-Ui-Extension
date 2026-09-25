@@ -1305,6 +1305,8 @@ html.qu-x:not(.qu-home) .menubaseButton .menu div {
   text-align: start !important;
 }
 html.qu-x:not(.qu-home) .menubaseButton .menu div span {
+  padding: 0 !important;
+  height: auto !important;
   font: 600 14px/1.2 var(--x-font-ui) !important;
   color: inherit !important;
   background: none !important;
@@ -1371,12 +1373,11 @@ html.qu-x.qu-home .menuitem:hover {
 html.qu-x.qu-home .menubaseButton {
   display: contents !important;
 }
+/* Home module cards carry a title and a description, nothing else: no icon
+   chip and no chevron. */
 html.qu-x.qu-home .menubaseButton .menu {
   position: relative !important;
-  display: grid !important;
-  grid-template-columns: 40px 1fr 16px !important;
-  column-gap: 12px !important;
-  align-items: center !important;
+  display: block !important;
   background: none !important;
   background-image: none !important;
   background-color: transparent !important;
@@ -1387,30 +1388,12 @@ html.qu-x.qu-home .menubaseButton .menu {
   width: auto !important;
   height: auto !important;
 }
-/* chip and icon occupy the same grid cell, so the icon is centred by the
-   mask rather than by hand-positioned offsets */
-html.qu-x.qu-home .menubaseButton .menu::before {
-  content: '' !important;
-  grid-area: 1 / 1 !important;
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50% !important;
-  background: var(--x-brand-tint) !important;
-}
-html.qu-x.qu-home .menubaseButton .menu::after {
-  content: '' !important;
-  grid-area: 1 / 1 !important;
-  width: 40px !important;
-  height: 40px !important;
-  background: var(--x-brand-text) !important;
-  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
-  mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
-}
-html.qu-x[data-qux^='acm-'].qu-home .menubaseButton .menu::before {
-  border-radius: 0 !important;
+html.qu-x.qu-home .menubaseButton .menu::before,
+html.qu-x.qu-home .menubaseButton .menu::after,
+html.qu-x.qu-home .menubaseButton .menu > div::after {
+  content: none !important;
 }
 html.qu-x.qu-home .menubaseButton .menu > div {
-  grid-area: 1 / 2 !important;
   text-align: start !important;
   background: none !important;
   margin: 0 !important;
@@ -1421,6 +1404,9 @@ html.qu-x.qu-home .menubaseButton .menu > div {
 }
 html.qu-x.qu-home .menubaseButton .menu > div > span {
   display: block !important;
+  /* the legacy sheets pad the label 15px 10px for their sprite button */
+  padding: 0 !important;
+  height: auto !important;
   text-align: start !important;
   font: var(--x-w-h3) 16px/1.3 var(--x-font-ui) !important;
   color: var(--x-ink) !important;
@@ -1434,17 +1420,6 @@ html.qu-x.qu-home .menubaseButton .menu > div > span .qu-ar {
   display: block !important;
   font: 700 15px/1.7 var(--x-font-ar) !important;
   color: var(--x-ink) !important;
-}
-html.qu-x.qu-home .menubaseButton .menu > div::after {
-  content: '' !important;
-  position: absolute !important;
-  inset-inline-end: 0 !important;
-  top: 0 !important;
-  width: 16px !important;
-  height: 40px !important;
-  background: var(--x-muted) !important;
-  -webkit-mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
-  mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
 }
 html.qu-x.qu-home .descriptionText {
   grid-column: 1 / -1 !important;
