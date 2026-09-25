@@ -1509,11 +1509,16 @@ html.qu-x #contentBelt ul.items {
   margin: 0 !important;
   padding: 0 !important;
 }
+/* Cascade writes an inline height on every option (height:49px), sized for
+   its one-line labels. The bilingual split stacks English over Arabic, so a
+   two-line option overflowed into the next one and their text overlapped. */
 html.qu-x #contentBelt ul.items > li {
   list-style: none !important;
   margin: 0 !important;
   padding: 0 !important;
   background: none !important;
+  height: auto !important;
+  min-height: 0 !important;
 }
 /* The li is a grid item and stretches to the tallest option in its row, but
    the a inside it is not, and only ever took its own content height. Options
@@ -1525,6 +1530,10 @@ html.qu-x #contentBelt ul.items > li > a {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
+  /* cascade.css floats each option at a fixed 250px, which wrapped every
+     label into a narrow strip of a column three times as wide */
+  float: none !important;
+  width: auto !important;
   height: 100% !important;
   box-sizing: border-box !important;
   padding: 12px 14px !important;
