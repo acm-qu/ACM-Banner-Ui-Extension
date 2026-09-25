@@ -233,7 +233,6 @@ html.qu-x[data-qux='qu-light'] {
   --x-shadow-card: 0 1px 1px rgba(24, 12, 17, 0.02);
   --x-shadow-pop: 0 2px 6px rgba(24, 12, 17, 0.035);
   --x-shadow-overlay: 0 4px 12px rgba(24, 12, 17, 0.05);
-  --x-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 
 html.qu-x[data-qux='qu-dark'] {
@@ -304,7 +303,6 @@ html.qu-x[data-qux='acm-light'] {
   --x-shadow-card: none;
   --x-shadow-pop: 4px 4px 0 0 #2fbbab;
   --x-shadow-overlay: 6px 6px 0 0 #2fbbab;
-  --x-ease: cubic-bezier(0, 0.8, 0.2, 1);
 }
 
 html.qu-x[data-qux='acm-dark'] {
@@ -347,7 +345,6 @@ html.qu-x[data-qux='acm-dark'] {
   --x-shadow-card: none;
   --x-shadow-pop: 4px 4px 0 0 #2fbbab;
   --x-shadow-overlay: 6px 6px 0 0 #2fbbab;
-  --x-ease: cubic-bezier(0, 0.8, 0.2, 1);
 }
 
 /* ==========================================================================
@@ -392,6 +389,15 @@ html.qu-x {
   /* Text inset inside a card: caption, header, label and value cells share
      it, so their text lines up on one edge. */
   --x-card-x: var(--x-s-5);
+
+  /* Motion. One easing for everything that moves; hover changes take 0.7s,
+     panels that open take 1s. The popup's Animations switch and the OS
+     reduced-motion setting zero the durations (sections 15, 1b). */
+  --x-ease: cubic-bezier(0, 0.78, 0.28, 1);
+  --x-dur-hover: 0.7s;
+  --x-dur-reveal: 1s;
+  /* lets height: auto take part in a transition (the panels' slide-down) */
+  interpolate-size: allow-keywords !important;
 }
 
 /* The QU theme is sharp-cornered everywhere, including shapes that carry a
@@ -548,6 +554,21 @@ html.qu-x br[data-qu-br='gap'] {
    #contentHolder in #pagebody) are spacing, not content. */
 html.qu-x :is(#content, #bodyContainer, #pageheader, #pagebody, #contentHolder) > br {
   display: none !important;
+}
+
+/* Every colour, border and shadow change eases in — hover, focus, a tab
+   becoming current — so nothing on the page snaps. Opacity, transforms and
+   sizes are left out on purpose: Cascade animates some of those itself with
+   jQuery, and a CSS transition on top would drag its frames. A component that
+   moves (a chevron turning, an option's label sliding) names transform in its
+   own, more specific rule. */
+html.qu-x body *,
+html.qu-x body *::before,
+html.qu-x body *::after {
+  transition-property: color, background-color, border-color, box-shadow, outline-color,
+    text-decoration-color, fill, stroke !important;
+  transition-duration: var(--x-dur-hover) !important;
+  transition-timing-function: var(--x-ease) !important;
 }
 
 html.qu-x a {
@@ -819,6 +840,10 @@ html.qu-x .closeicon {
 /* --- Results overlay -------------------------------------------------- */
 
 html.qu-x .findPageOverlay {
+  /* slides down from nothing when it appears: see @starting-style below */
+  transition-property: height, padding-block !important;
+  transition-duration: var(--x-dur-reveal) !important;
+  height: auto !important;
   position: absolute !important;
   top: calc(100% + 8px) !important;
   inset-inline-end: 0 !important;
@@ -832,6 +857,12 @@ html.qu-x .findPageOverlay {
   box-shadow: var(--x-shadow-overlay) !important;
   padding: 8px !important;
   z-index: 60 !important;
+}
+@starting-style {
+  html.qu-x .findPageOverlay {
+    height: 0 !important;
+    padding-block: 0 !important;
+  }
 }
 html.qu-x .findPageOverlay hr {
   display: none !important;
@@ -1189,7 +1220,6 @@ html.qu-x:not(.qu-home) .menubaseButton .menu {
   border-radius: var(--x-r-ctl) !important;
   color: var(--x-ink) !important;
   width: auto !important;
-  transition: background 0.15s var(--x-ease), color 0.15s var(--x-ease) !important;
 }
 /* The module tabs are words only — no icons, as on the Home cards. */
 html.qu-x:not(.qu-home) .menubaseButton .menu::before {
@@ -1264,7 +1294,6 @@ html.qu-x.qu-home .menuitem {
   border: 1px solid var(--x-hairline) !important;
   border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-card) !important;
-  transition: border-color 0.15s var(--x-ease) !important;
 }
 html.qu-x.qu-home .menuitem:hover {
   border-color: var(--x-brand-text) !important;
@@ -1370,7 +1399,6 @@ html.qu-x .htmlButtonLevel2-3 {
   border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-card) !important;
   cursor: pointer !important;
-  transition: border-color 0.15s var(--x-ease), box-shadow 0.15s var(--x-ease) !important;
 }
 html.qu-x .htmlButtonLevel2-3::before {
   content: '' !important;
@@ -1418,7 +1446,7 @@ html.qu-x .htmlButtonLevel2-3[data-qu-has-children] h3::after {
   background: var(--x-muted) !important;
   -webkit-mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
   mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
-  transition: transform 0.2s var(--x-ease) !important;
+  transition-property: transform, background-color !important;
 }
 html.qu-x .htmlButtonLevel2-3.selected h3::after {
   transform: rotate(180deg) !important;
@@ -1495,10 +1523,20 @@ html.qu-x #contentBelt > [id='level3Container'] {
 }
 html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
   display: block !important;
+  /* slides down from nothing when it opens: see @starting-style below */
+  overflow: hidden !important;
+  transition-property: height, padding-block, background-color, border-color !important;
+  transition-duration: var(--x-dur-reveal) !important;
   background: var(--x-brand-tint) !important;
   border: 1px solid var(--x-brand-tint-border) !important;
   border-radius: var(--x-r-card) !important;
   padding: 8px !important;
+}
+@starting-style {
+  html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
+    height: 0 !important;
+    padding-block: 0 !important;
+  }
 }
 html.qu-x #contentBelt ul.items {
   display: grid !important;
@@ -1560,14 +1598,27 @@ html.qu-x #contentBelt ul.items > li > a::after {
 html.qu-x.qu-ar #contentBelt ul.items > li > a::after {
   transform: scaleX(-1) !important;
 }
+/* Hover: the option's text takes the primary colour and its label slides
+   5px toward the reading end. Dark scopes use the primary's lifted text tone,
+   since plain maroon on near-black would not read. */
 html.qu-x #contentBelt ul.items > li > a:hover {
   background: var(--x-surface) !important;
-  color: var(--x-brand-text) !important;
+  color: var(--x-brand) !important;
   text-decoration: none !important;
+}
+html.qu-x[data-qux$='-dark'] #contentBelt ul.items > li > a:hover {
+  color: var(--x-brand-text) !important;
+}
+html.qu-x #contentBelt ul.items > li > a:hover h3 {
+  transform: translateX(5px) !important;
+}
+html.qu-x.qu-ar #contentBelt ul.items > li > a:hover h3 {
+  transform: translateX(-5px) !important;
 }
 html.qu-x #contentBelt ul.items h3 {
   flex: 1 !important;
   min-width: 0 !important;
+  transition-property: color, transform !important;
   font: 500 14px/1.35 var(--x-font-ui) !important;
   color: inherit !important;
   margin: 0 !important;
@@ -1978,7 +2029,6 @@ html.qu-x input[type='button'] {
   width: auto !important;
   height: auto !important;
   box-shadow: none !important;
-  transition: background 0.15s var(--x-ease) !important;
 }
 html.qu-x button.htmlButton:hover,
 html.qu-x input[type='submit']:hover {
@@ -3205,6 +3255,16 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x {
     --x-card-x: var(--x-s-4);
   }
+  /* No module bar on a phone: the crumb and Home lead back to every module.
+     Home keeps #navigationcontrol, where the modules are the content. */
+  html.qu-x.qu-menu:not(.qu-home) #navigationcontrol,
+  html.qu-x #navigationcontrolSmall {
+    display: none !important;
+  }
+  html.qu-x:has(#navigationcontrolSmall) .qu-headrow,
+  html.qu-x #navigationcontrol + .qu-headrow {
+    margin-block: var(--x-gap-top) 0 !important;
+  }
   /* Key/value tables become stacked pairs; grids scroll inside their frame. */
   html.qu-x table.datadisplaytable[data-qu-table='kv'],
   html.qu-x table.datadisplaytable[data-qu-table='kv'] tbody,
@@ -3325,6 +3385,10 @@ html.qu-x.qu-ar td.dddefault {
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+  html.qu-x {
+    --x-dur-hover: 0.01ms;
+    --x-dur-reveal: 0.01ms;
+  }
   html.qu-x *,
   html.qu-x *::before,
   html.qu-x *::after {

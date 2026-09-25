@@ -228,7 +228,15 @@ Two component rules follow from real bugs:
   a message (a `<b>`, a link) became a column of its own.
 
 Module tabs, Home cards and level-3 options carry no icons; only level-2 cards
-do.
+do. On phones (≤640px) the module bar is hidden; Home keeps its module cards.
+
+**Motion.** One easing, `--x-ease: cubic-bezier(0, .78, .28, 1)`; hover changes
+take `--x-dur-hover` (0.7s) and panels that open take `--x-dur-reveal` (1s). A
+universal rule eases colours, borders and shadows on every element — never
+opacity, transforms or sizes, which Cascade animates with jQuery. The level-3
+panel and the search results slide down from `height: 0` via `@starting-style`
+(with `interpolate-size: allow-keywords`). The popup's Animations switch and the
+OS reduced-motion setting both zero the duration tokens.
 
 Section map — find where a rule belongs before adding one:
 
