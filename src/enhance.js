@@ -1715,6 +1715,170 @@
     buildFooter();
   }
 
+  /* --- Layout audit, for the console only: window.__quEnhancer.audit().
+     Checks the rules the sheet is built on, on whatever page is open:
+       - regions span the frame: their content meets both edges;
+       - blocks start on their stack's start edge and stay inside it;
+       - nothing visible pokes out of the frame (full-bleed bands, and
+         content inside a scrolling box, excepted);
+       - the gaps between regions are rhythm tokens; no block sits closer
+         than --x-gap-block to the block above it, whichever stack each is
+         in; and next-door blocks sit exactly one --x-gap-block apart.
+     Returns geometry and selectors only. It reads no text, logs nothing and
+     keeps nothing. Both lists empty means the page follows the system. --- */
+
+  const AUDIT_REGIONS = [
+    '#header',
+    '#navigationcontrolSmall',
+    '#navigationcontrol',
+    '.qu-headrow',
+    'html.qu-menu #pagebody > .infotextdiv',
+    'html.qu-menu:not(.qu-home) #contentHolder',
+    'html.qu-leaf .pagebodydiv',
+    '#pagefooter',
+  ];
+  const AUDIT_STACKS =
+    '.pagebodydiv, .pagebodydiv form:not([data-qu-gateway]), td.pldefault, .qu-transcript-main';
+  const AUDIT_BLOCKS =
+    ':scope > :is(table, form, .infotextdiv, .errortext, .warningtext, .qu-section-head)';
+  // Full-bleed, deliberately centred, floating, or off-screen on purpose.
+  const AUDIT_FREE =
+    '#header, #pagefooter, [data-qu-state], .qu-notice, .findPageOverlay, #helpWindow, ' +
+    '.skiplinks, .fieldlabeltextinvisible';
+
+  function audit() {
+    const rtl = getComputedStyle(root).direction === 'rtl';
+    const near = (a, b) => Math.abs(a - b) <= 1;
+    const shown = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+    };
+    const inner = (el) => {
+      const r = el.getBoundingClientRect();
+      const s = getComputedStyle(el);
+      return {
+        left: Math.round(r.left + parseFloat(s.borderLeftWidth) + parseFloat(s.paddingLeft)),
+        right: Math.round(r.right - parseFloat(s.borderRightWidth) - parseFloat(s.paddingRight)),
+      };
+    };
+    const name = (el) =>
+      el.tagName.toLowerCase() +
+      (el.id ? '#' + el.id : '') +
+      Array.prototype.slice.call(el.classList, 0, 2).map((c) => '.' + c).join('');
+    const token = (n) =>
+      Math.round(parseFloat(getComputedStyle(root).getPropertyValue('--x-gap-' + n)) || 0);
+
+    const frame = inner(document.body);
+    const regionGaps = ['top', 'nav', 'content', 'end'].map(token);
+    const blockGap = token('block');
+    const offFrame = [];
+    const gaps = [];
+    const flagged = new Set();
+    const flag = (el, left, right) => {
+      if (flagged.has(el)) return;
+      flagged.add(el);
+      offFrame.push({ sel: name(el), left: left, right: right });
+    };
+    const gap = (a, b, px) => gaps.push({ from: name(a), to: name(b), px: px });
+
+    // Regions: content meets both frame edges; the gaps between them are tokens.
+    const regions = [];
+    AUDIT_REGIONS.forEach((sel) => {
+      document.querySelectorAll(sel).forEach((el) => {
+        if (!shown(el) || regions.indexOf(el) > -1) return;
+        const e = inner(el);
+        if (!near(e.left, frame.left) || !near(e.right, frame.right)) flag(el, e.left, e.right);
+        regions.push(el);
+      });
+    });
+    const byTop = (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+    regions.sort(byTop);
+    for (let i = 1; i < regions.length; i++) {
+      const px = Math.round(
+        regions[i].getBoundingClientRect().top - regions[i - 1].getBoundingClientRect().bottom
+      );
+      if (!regionGaps.some((t) => near(px, t))) gap(regions[i - 1], regions[i], px);
+    }
+
+    // Blocks: start on their stack's start edge and stay inside it. A gateway
+    // form is a card that spaces its own insides.
+    const blocks = [];
+    document.querySelectorAll(AUDIT_STACKS).forEach((stack) => {
+      if (!shown(stack) || stack.closest('form[data-qu-gateway]')) return;
+      const box = inner(stack);
+      stack.querySelectorAll(AUDIT_BLOCKS).forEach((el) => {
+        if (!shown(el) || el.closest(AUDIT_FREE) || blocks.indexOf(el) > -1) return;
+        blocks.push(el);
+        const r = el.getBoundingClientRect();
+        const start = Math.round(rtl ? r.right : r.left);
+        const off = !near(start, rtl ? box.right : box.left) || r.left < box.left - 1 || r.right > box.right + 1;
+        if (off) flag(el, Math.round(r.left), Math.round(r.right));
+      });
+    });
+
+    // Gaps: for each block, the nearest block or region above it in the same
+    // column. Closer than a block gap is always wrong — that is a card sitting
+    // flush under the one above, wherever each lives. A section head and the
+    // table under it are one card. Between next-door siblings, with nothing
+    // else between them, the gap must be exactly one block gap.
+    const attached = (a, b) => a.classList.contains('qu-section-head') && a.nextElementSibling === b;
+    const nextDoor = (a, b) => {
+      if (a.parentElement !== b.parentElement) return false;
+      for (let n = a.nextSibling; n && n !== b; n = n.nextSibling) {
+        if (n.nodeType === Node.TEXT_NODE && n.nodeValue.replace(/[\s ]+/g, '')) return false;
+        if (n.nodeType === Node.ELEMENT_NODE && shown(n)) return false;
+      }
+      return true;
+    };
+    const candidates = regions.concat(blocks);
+    blocks.forEach((b) => {
+      const rb = b.getBoundingClientRect();
+      let above = null;
+      let aboveBottom = -Infinity;
+      candidates.forEach((a) => {
+        if (a === b || a.contains(b) || b.contains(a)) return;
+        const ra = a.getBoundingClientRect();
+        if (ra.bottom > rb.top + 1 || ra.right <= rb.left || ra.left >= rb.right) return;
+        if (ra.bottom > aboveBottom) {
+          above = a;
+          aboveBottom = ra.bottom;
+        }
+      });
+      if (!above || attached(above, b)) return;
+      const px = Math.round(rb.top - aboveBottom);
+      if (px < blockGap - 1) gap(above, b, px);
+      else if (nextDoor(above, b) && !near(px, blockGap)) gap(above, b, px);
+    });
+
+    // Anything else visible that pokes out of the frame. Positioned overlays
+    // are placed on purpose, and whatever sits inside a scrolling box is in
+    // reach by scrolling it.
+    const scrolls = (el) => {
+      for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        if (/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowX)) return true;
+      }
+      return false;
+    };
+    const all = document.body.querySelectorAll('*');
+    for (let i = 0; i < all.length && offFrame.length < 50; i++) {
+      const el = all[i];
+      if (el.closest(AUDIT_FREE)) continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      if (r.left >= frame.left - 1 && r.right <= frame.right + 1) continue;
+      const pos = getComputedStyle(el).position;
+      if (pos === 'fixed' || pos === 'absolute') continue;
+      if (el.parentElement && flagged.has(el.parentElement)) {
+        flagged.add(el); // report the outermost offender only
+        continue;
+      }
+      if (scrolls(el)) continue;
+      flag(el, Math.round(r.left), Math.round(r.right));
+    }
+
+    return { frame: frame, offFrame: offFrame, gaps: gaps };
+  }
+
   /* --- Wiring. Menu drilling is client-side and hash-routed, and #contentBelt
      is rebuilt with no event to hook, so the observer is not optional. --- */
 
@@ -1836,6 +2000,7 @@
         theme: root.dataset.qux,
         lang: root.dataset.uilang,
       }),
+      audit: audit,
     }),
     configurable: true,
   });
