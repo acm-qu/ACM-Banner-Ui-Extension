@@ -1961,7 +1961,7 @@ html.qu-x table.dataentrytable {
   border: 1px solid var(--x-hairline) !important;
   border-radius: var(--x-r-area) !important;
   background: var(--x-surface) !important;
-  padding: 20px !important;
+  padding: var(--x-card-x) !important;
   box-sizing: border-box !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
@@ -2206,6 +2206,38 @@ html.qu-x td.ddseparator {
   border: 0 !important;
   font-size: 0 !important;
 }
+/* One card inset. The first and last cell of every row take the card's text
+   inset, so the caption, the column headers, the labels and the values all
+   start on one edge; cells between them keep the tighter gutter. Captions
+   and section heads use the same token. They used to differ by 6px — 20px for
+   the caption, 14px for the cells. The note banner, the stat tiles and the
+   transcript lay out their own cells. */
+html.qu-x table.datadisplaytable:not([data-qu-note], [data-qu-stats], [data-qu-transcript])
+  tr
+  > :is(th, td):first-child {
+  padding-inline-start: var(--x-card-x) !important;
+}
+html.qu-x table.datadisplaytable:not([data-qu-note], [data-qu-stats], [data-qu-transcript])
+  tr
+  > :is(th, td):last-child {
+  padding-inline-end: var(--x-card-x) !important;
+}
+/* The transcript's rows set their own cell padding at higher weight; its term
+   and totals rows sit in cards whose headers are inset by the same token.
+   Preamble rows are left out: their card pads itself. */
+html.qu-x.qu-transcript
+  table[data-qu-transcript]
+  tr[data-qu-term]:is([data-qu-row='header'], [data-qu-row='data'], [data-qu-row='totals'], [data-qu-row='totals-header'])
+  > :first-child {
+  padding-inline-start: var(--x-card-x) !important;
+}
+html.qu-x.qu-transcript
+  table[data-qu-transcript]
+  tr[data-qu-term]:is([data-qu-row='header'], [data-qu-row='data'], [data-qu-row='totals'], [data-qu-row='totals-header'])
+  > :last-child {
+  padding-inline-end: var(--x-card-x) !important;
+}
+
 /* Numeric columns read better tabular and end-aligned. */
 html.qu-x td.dddefault.qu-num,
 html.qu-x td.dddefault[align='right'] {
@@ -3203,6 +3235,9 @@ html.qu-x.qu-ar td.dddefault {
 }
 
 @media (max-width: 640px) {
+  html.qu-x {
+    --x-card-x: var(--x-s-4);
+  }
   /* Key/value tables become stacked pairs; grids scroll inside their frame. */
   html.qu-x table.datadisplaytable[data-qu-table='kv'],
   html.qu-x table.datadisplaytable[data-qu-table='kv'] tbody,
@@ -3214,7 +3249,7 @@ html.qu-x.qu-ar td.dddefault {
     display: block !important;
     width: auto !important;
     border-bottom: 0 !important;
-    padding: 2px 14px !important;
+    padding: 2px var(--x-card-x) !important;
   }
   html.qu-x table.datadisplaytable[data-qu-table='kv'] th.ddlabel {
     padding-top: 12px !important;
@@ -3482,7 +3517,7 @@ html.qu-x table.datadisplaytable[data-qu-stats] tr {
   display: flex !important;
   flex-direction: column !important;
   gap: 6px !important;
-  padding: 14px 20px !important;
+  padding: 14px var(--x-card-x) !important;
   border-inline-end: 1px solid var(--x-hairline) !important;
 }
 html.qu-x table.datadisplaytable[data-qu-stats] tr:last-child {
@@ -3614,7 +3649,7 @@ html.qu-x form[data-qu-gateway='edit'] {
 html.qu-x table.datadisplaytable > caption.captiontext:not([data-qu-caption-empty]) {
   box-sizing: border-box !important;
   margin-block: 0 !important;
-  padding: 18px 20px 14px !important;
+  padding: 18px var(--x-card-x) 14px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
   border-bottom: 0 !important;
@@ -3626,7 +3661,7 @@ html.qu-x table.datadisplaytable:has(> caption.captiontext:not([data-qu-caption-
 html.qu-x table.datadisplaytable[data-qu-stats] > caption.captiontext {
   border: 0 !important;
   background: none !important;
-  padding: 18px 20px 0 !important;
+  padding: 18px var(--x-card-x) 0 !important;
   margin-block: 0 !important;
 }
 html.qu-x table.datadisplaytable[data-qu-stats] {
@@ -3636,7 +3671,7 @@ html.qu-x table.datadisplaytable[data-qu-stats] {
    a caption so the pill can sit on its row. */
 html.qu-x .qu-section-head {
   box-sizing: border-box !important;
-  padding: 18px 20px 14px !important;
+  padding: 18px var(--x-card-x) 14px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
   border-bottom: 0 !important;
