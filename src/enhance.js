@@ -90,7 +90,12 @@
       chrome.storage.sync.get(DEFAULTS, (got) => {
         if (!chrome.runtime.lastError && got) prefs = Object.assign({}, DEFAULTS, got);
         if (prefs.enabled === false) disableSkin();
-        else stampTheme(prefs);
+        else {
+          stampTheme(prefs);
+          // The header switcher may already be built from DEFAULTS, and would
+          // otherwise keep showing the default theme as pressed.
+          syncSwitcher();
+        }
         resolve();
       });
     } catch (e) {
