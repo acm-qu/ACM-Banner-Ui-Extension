@@ -240,7 +240,7 @@ Module tabs, Home cards and level-3 options carry no icons; only level-2 cards
 do. On phones (≤640px) the module bar is hidden; Home keeps its module cards.
 
 **Motion.** One easing, `--x-ease: cubic-bezier(0, .78, .28, 1)`; hover changes
-take `--x-dur-hover` (0.7s) and panels that open take `--x-dur-reveal` (1s). A
+take `--x-dur-hover` (0.5s) and panels that open take `--x-dur-reveal` (0.7s). A
 universal rule eases colours, borders and shadows on every element — never
 opacity, transforms or sizes, which Cascade animates with jQuery. The level-3
 panel and the search results slide down from `height: 0` via `@starting-style`

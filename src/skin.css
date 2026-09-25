@@ -390,12 +390,12 @@ html.qu-x {
      it, so their text lines up on one edge. */
   --x-card-x: var(--x-s-5);
 
-  /* Motion. One easing for everything that moves; hover changes take 0.7s,
-     panels that open take 1s. The popup's Animations switch and the OS
+  /* Motion. One easing for everything that moves; hover changes take 0.5s,
+     panels that open take 0.7s. The popup's Animations switch and the OS
      reduced-motion setting zero the durations (sections 15, 1b). */
   --x-ease: cubic-bezier(0, 0.78, 0.28, 1);
-  --x-dur-hover: 0.7s;
-  --x-dur-reveal: 1s;
+  --x-dur-hover: 0.5s;
+  --x-dur-reveal: 0.7s;
   /* lets height: auto take part in a transition (the panels' slide-down) */
   interpolate-size: allow-keywords !important;
 }
@@ -1621,6 +1621,11 @@ html.qu-x #contentBelt ul.items > li > a:hover {
 }
 html.qu-x[data-qux$='-dark'] #contentBelt ul.items > li > a:hover {
   color: var(--x-brand-text) !important;
+}
+/* ACM's mint is a fill colour (1.6:1 on white); as hover text it takes the
+   design system's mid teal, one step darker, in both modes. */
+html.qu-x[data-qux^='acm-'] #contentBelt ul.items > li > a:hover {
+  color: #2fbbab !important;
 }
 html.qu-x #contentBelt ul.items > li > a:hover h3 {
   transform: translateX(5px) !important;
