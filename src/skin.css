@@ -2167,6 +2167,9 @@ html.qu-x .taboff {
      the tab padding on top it ran 8px past the frame. */
   box-sizing: border-box !important;
   max-width: 100% !important;
+  /* Banner's height=22 left no room for the label inside the padding, so the
+     underline, drawn at the cell's foot, ran through the text. */
+  height: auto !important;
   padding: 10px 4px 13px !important;
   margin-inline-end: 24px !important;
   background: none !important;
@@ -2201,6 +2204,14 @@ html.qu-x .tabon::after {
   height: 3px !important;
   border-radius: 1.5px !important;
   background: var(--x-brand-text) !important;
+}
+/* Banner draws each tab as a label cell plus a corner cell holding only a
+   sprite image, and pads the strip with full-width spacer cells of the same
+   classes. Styled as tabs, a corner drew a stray 3px dash beside the active
+   tab and a spacer a full-width bar under the strip and at the page end.
+   A tab cell with only a decorative image and no link is not a tab. */
+html.qu-x :is(td.bgtabon, td.bgtaboff):has(> img.headerImg):not(:has(a)) {
+  display: none !important;
 }
 /* the tab images the legacy sheet uses for the rounded corners */
 html.qu-x td.bgtabon img,
@@ -3143,7 +3154,9 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x #navigationcontrol .menucontainer {
     overflow-x: auto !important;
   }
-  html.qu-x .breadCrumb {
+  /* A wrapped crumb in a pill frame becomes a rounded blob; drop the frame. */
+  html.qu-x .breadCrumb,
+  html.qu-x .crumbs {
     border: 0 !important;
     background: none !important;
     box-shadow: none !important;
