@@ -4,8 +4,8 @@
 (() => {
   'use strict';
 
-  const DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en', enabled: true };
-  const GROUPS = ['theme', 'mode'];
+  const DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en', enabled: true, motion: 'on' };
+  const GROUPS = ['theme', 'mode', 'motion'];
   // 'enabled' is a boolean in storage but on/off in the markup.
   const asValue = (k, v) => (k === 'enabled' ? (v ? 'on' : 'off') : v);
   const fromValue = (k, v) => (k === 'enabled' ? v === 'on' : v);

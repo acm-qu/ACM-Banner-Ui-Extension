@@ -97,8 +97,9 @@ the chapter about it.
 other page, but the code never reads, writes, prefills, autofills or submits a
 username, PIN or password field.
 
-**It stores four things**, all in Chrome's sync storage: your theme, your
-appearance setting, your language setting, and whether the extension is on.
+**It stores five things**, all in Chrome's sync storage: your theme, your
+appearance setting, your language setting, whether animations are on, and
+whether the extension is on.
 Your student ID, name, grades, address and balances are displayed and styled
 like any other text on the page — never logged, stored or transmitted.
 

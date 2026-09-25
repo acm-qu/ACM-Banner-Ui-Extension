@@ -556,6 +556,19 @@ html.qu-x :is(#content, #bodyContainer, #pageheader, #pagebody, #contentHolder) 
   display: none !important;
 }
 
+/* The popup's Animations switch (data-qux-motion, written by stampTheme):
+   off makes every transition instant, the slide-downs included. */
+html.qu-x[data-qux-motion='off'] {
+  --x-dur-hover: 0.01ms;
+  --x-dur-reveal: 0.01ms;
+}
+html.qu-x[data-qux-motion='off'] *,
+html.qu-x[data-qux-motion='off'] *::before,
+html.qu-x[data-qux-motion='off'] *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}
+
 /* Every colour, border and shadow change eases in — hover, focus, a tab
    becoming current — so nothing on the page snaps. Opacity, transforms and
    sizes are left out on purpose: Cascade animates some of those itself with

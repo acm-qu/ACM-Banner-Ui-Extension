@@ -42,9 +42,9 @@
 
   // --- Theme, stamped before first paint ---
 
-  const DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en', enabled: true };
+  const DEFAULTS = { theme: 'qu', mode: 'auto', lang: 'en', enabled: true, motion: 'on' };
 
-  function stampTheme({ theme, mode, lang }) {
+  function stampTheme({ theme, mode, lang, motion }) {
     const dark =
       mode === 'dark' ||
       (mode === 'auto' &&
@@ -54,6 +54,9 @@
     root.dataset.quxTheme = theme;
     root.dataset.quxMode = mode;
     root.dataset.uilang = lang;
+    // The popup's Animations switch. A data attribute, not a class: the
+    // observer only watches class, so this never re-arms a pass.
+    root.dataset.quxMotion = motion === 'off' ? 'off' : 'on';
     root.classList.toggle('qu-ar', lang === 'ar');
   }
 
