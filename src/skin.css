@@ -350,6 +350,50 @@ html.qu-x[data-qux='acm-dark'] {
   --x-ease: cubic-bezier(0, 0.8, 0.2, 1);
 }
 
+/* ==========================================================================
+   1b. LAYOUT TOKENS — geometry is theme-independent, so these are declared
+   once and inherited by all four scopes. Colour and type tokens above still
+   need a value in every scope; these do not.
+   ========================================================================== */
+
+html.qu-x {
+  /* The design's 4-base spacing scale, s-1 … s-10. */
+  --x-s-1: 4px;
+  --x-s-2: 8px;
+  --x-s-3: 12px;
+  --x-s-4: 16px;
+  --x-s-5: 20px;
+  --x-s-6: 24px;
+  --x-s-7: 32px;
+  --x-s-8: 40px;
+  --x-s-9: 48px;
+  --x-s-10: 64px;
+
+  /* The frame. Every region of every page shares these two edges: 1376px of
+     content (the 1440 artboards less their 32px gutters), centred above that,
+     and a gutter that tracks the artboards — 32 at 1440, 20 at 900, 16 at 480.
+     The inset is viewport-based so it resolves to the same length at any
+     depth; a classic scrollbar then shifts every edge by the same amount. */
+  --x-frame: 1376px;
+  --x-gutter: clamp(16px, 2.2222vw, 32px);
+  --x-inset: max(var(--x-gutter), calc((100vw - var(--x-frame)) / 2));
+
+  /* Rhythm. The only vertical gaps between page regions and body blocks.
+     Each region and block owns its top gap; nothing carries a bottom margin.
+     Navigation → content is larger than block → block, so content groups with
+     content and not with the navigation above it. */
+  --x-gap-top: var(--x-s-6); /* global bar → first region */
+  --x-gap-nav: var(--x-s-4); /* navigation row → navigation row */
+  --x-gap-content: var(--x-s-7); /* navigation → content */
+  --x-gap-block: var(--x-s-4); /* block → block inside content */
+  --x-gap-grid: var(--x-s-4); /* card grids, both axes */
+  --x-gap-end: var(--x-s-9); /* content → footer */
+
+  /* Text inset inside a card: caption, header, label and value cells share
+     it, so their text lines up on one edge. */
+  --x-card-x: var(--x-s-5);
+}
+
 /* The QU theme is sharp-cornered everywhere, including shapes that carry a
    hardcoded radius. The ACM theme keeps its pill-and-square language. */
 html.qu-x[data-qux^='qu-'] #content *,
