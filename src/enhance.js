@@ -640,13 +640,24 @@
       left.className = 'qu-headleft';
       row.appendChild(left);
     }
-    if (row.parentElement !== head) {
+
+    // Navigation sits in one place on every page: global bar → module
+    // navigation → crumb and search → content. Leaf pages already render
+    // their compact nav above #pageheader, but a drilled menu keeps its tile
+    // row in #pagebody, below it — so there the head row follows the tile
+    // row instead. Only this row moves; Cascade's tile container stays put.
+    // Home has no tile row of its own (the modules are its content), so its
+    // head row stays in #pageheader, above them.
+    const drilled = isMenuPage && !root.classList.contains('qu-home');
+    const tiles = drilled && document.getElementById('navigationcontrol');
+    if (tiles && tiles.parentElement) {
+      if (row.previousElementSibling !== tiles) tiles.after(row);
+    } else if (row.parentElement !== head) {
       const inner = head.querySelector(':scope > .pagebodydiv');
       if (inner) head.insertBefore(row, inner);
       else head.prepend(row);
     }
 
-    // trim the crumb labels first — the page heading is derived from them
     document
       .querySelectorAll('.breadCrumb a, .crumbs a, .crumbs .lastValue')
       .forEach(stripArabicTail);
@@ -668,47 +679,31 @@
     }
     if (search && search.parentElement !== row) row.appendChild(search);
 
-    if (isLeaf) buildLeafTitleRow(head, row);
-    else buildPageTitle();
+    if (isLeaf) placeIdentity(row, search);
     return row;
   }
 
-  /* Leaf pages put the heading and the identity block on their own row under
-     the crumb. .staticheaders carries only the identity — ID, name, timestamp
-     — so the heading has to come from the breadcrumb. document.title is no
-     use: three menus ship an empty title and one says "DEFAULT". */
-  function buildLeafTitleRow(head, headRow) {
-    let titleRow = document.querySelector('.qu-titlerow');
-    if (!titleRow) {
-      titleRow = document.createElement('div');
-      titleRow.className = 'qu-titlerow';
-      titleRow.appendChild(document.createElement('div')).className = 'qu-pagetitle';
-    }
-    // Same re-homing rule as the head row: it always sits directly after it,
-    // wherever Cascade has since moved that.
-    if (titleRow.previousElementSibling !== headRow) headRow.after(titleRow);
-    // Result views carry more than one .staticheaders (the server's and the
-    // one Cascade writes after the POST), which rendered the identity twice.
-    // The first is kept and re-homed; the rest are hidden, never removed.
+  /* There is no page title of our own: the breadcrumb's current chip already
+     names the page, and a second, larger copy of it only pushed the content
+     down. The identity block — ID, name, timestamp — rides at the end of the
+     head row, just before the search.
+
+     Result views carry more than one .staticheaders (the server's and the one
+     Cascade writes after the POST), which rendered the identity twice. The
+     first is kept and re-homed; the rest are hidden, never removed. */
+  function placeIdentity(row, search) {
     const identities = document.querySelectorAll('.staticheaders');
     const identity = identities[0];
     for (let i = 1; i < identities.length; i++) {
       identities[i].dataset.quIdentityDupe = '1';
     }
-    if (identity) {
-      delete identity.dataset.quIdentityDupe;
-      if (identity.parentElement !== titleRow) titleRow.appendChild(identity);
-      splitIdentity(identity);
+    if (!identity) return;
+    delete identity.dataset.quIdentityDupe;
+    const before = search && search.parentElement === row ? search : null;
+    if (identity.parentElement !== row || identity.nextElementSibling !== before) {
+      row.insertBefore(identity, before);
     }
-
-    const title = titleRow.querySelector('.qu-pagetitle');
-    const selected = document.querySelector('.breadCrumb a.selected, .crumbs .lastValue');
-    const label = selected ? selected.textContent.replace(/\s+/g, ' ').trim() : '';
-    if (!label || title.dataset.quText === label) return;
-    title.dataset.quText = label;
-    title.textContent = label;
-    delete title.dataset.quSplit;
-    splitBilingual(title);
+    splitIdentity(identity);
   }
 
   /* "######### STUDENT NAME<br>Aug 21, 2026 07:30 pm" — one node, two facts.
@@ -768,43 +763,6 @@
     sub.className = 'qu-subtitle';
     sub.textContent = m[3];
     el.after(sub);
-  }
-
-  /* Drilled menus have no welcome of their own, so the title is the current
-     menu's name, which the breadcrumb already holds. The order down the page
-     is crumb → title → cards, so the title cannot sit in the head row beside
-     the crumb; it goes into #pagebody instead. */
-  function buildPageTitle() {
-    const atHome = root.classList.contains('qu-home');
-    const pagebody = document.getElementById('pagebody');
-    let row = document.querySelector('#pagebody > .qu-titlerow');
-    const selected = document.querySelector('#crumb .breadCrumb a.selected');
-
-    if (atHome || !selected || !pagebody) {
-      if (row) row.remove();
-      return;
-    }
-
-    if (!row) {
-      row = document.createElement('div');
-      row.className = 'qu-titlerow';
-      const t = document.createElement('div');
-      t.className = 'qu-pagetitle';
-      row.appendChild(t);
-    }
-    const anchor =
-      pagebody.querySelector(':scope > #contentHolder') ||
-      pagebody.querySelector(':scope > #contentBelt');
-    if (anchor && row.nextElementSibling !== anchor) pagebody.insertBefore(row, anchor);
-    else if (!anchor && row.parentElement !== pagebody) pagebody.appendChild(row);
-
-    const title = row.querySelector('.qu-pagetitle');
-    const label = selected.textContent.replace(/\s+/g, ' ').trim();
-    if (!label || title.dataset.quText === label) return;
-    title.dataset.quText = label;
-    title.textContent = label;
-    delete title.dataset.quSplit;
-    splitBilingual(title);
   }
 
   /* The footer attribution — extension-owned, and the only place the ACM

@@ -898,16 +898,27 @@ html.qu-x .findPageOverlay strong {
 
 /* The head row is extension-owned DOM: the welcome, the crumb and the search
    are siblings in the source with no common wrapper, so this puts the first
-   two in a left column with the search opposite. */
+   two in a left column that grows, and whatever follows it — the identity
+   block on leaf pages, then the search — packs against the end edge. There
+   is no page title: the crumb's current chip already names the page. */
 html.qu-x .qu-headrow {
   box-sizing: border-box !important;
   display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 24px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: var(--x-s-3) var(--x-s-6) !important;
   max-width: 1440px !important;
   margin-inline: auto !important;
   padding: 28px 32px 0 !important;
+}
+/* Home's left column is the greeting block, several lines tall; the search
+   stays level with its first line. */
+html.qu-x.qu-home .qu-headrow {
+  align-items: flex-start !important;
+}
+html.qu-x .qu-headrow > .staticheaders {
+  align-self: center !important;
 }
 html.qu-x .qu-headleft {
   min-width: 0 !important;
@@ -924,11 +935,7 @@ html.qu-x:not(.qu-home) .qu-headleft > #crumb,
 html.qu-x:not(.qu-home) .qu-headleft > .crumbs { order: 1 !important; margin: 0 !important; }
 
 
-/* The module row stays on drilled menus, between the crumb bar and the page
-   title, with the current module filled. */
-
-html.qu-x #welcomemessage,
-html.qu-x .qu-pagetitle {
+html.qu-x #welcomemessage {
   font: var(--x-w-h1) 28px/1.25 var(--x-font-display) !important;
   min-height: 0 !important;
   color: var(--x-ink) !important;
@@ -944,24 +951,10 @@ html.qu-x .qu-pagetitle {
 html.qu-x .qu-name {
   color: var(--x-brand-text) !important;
 }
-/* The welcome greets you on the home grid; a drilled menu shows its own name
-   instead, taken from the breadcrumb. */
+/* The welcome greets you on the home grid only. */
 html.qu-x:not(.qu-home) #welcomemessage,
 html.qu-x:not(.qu-home) .qu-subtitle {
   display: none !important;
-}
-html.qu-x.qu-home .qu-pagetitle {
-  display: none !important;
-}
-html.qu-x .qu-pagetitle .qu-en {
-  display: block !important;
-  text-align: start !important;
-}
-html.qu-x .qu-pagetitle .qu-ar {
-  display: block !important;
-  text-align: start !important;
-  font: 700 24px/1.7 var(--x-font-ar) !important;
-  color: var(--x-ink) !important;
 }
 /* "to myBanner Self Service" — the tail of the server's own welcome string,
    set as a subtitle. The diamond is the brand's rotated square, decoration
@@ -1713,29 +1706,6 @@ html.qu-x .qu-identity-when {
   color: var(--x-muted) !important;
 }
 
-/* Leaf heading and identity block share a row. */
-html.qu-x.qu-menu .qu-titlerow {
-  box-sizing: border-box !important;
-  display: block !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 4px 32px 0 !important;
-}
-html.qu-x .qu-titlerow {
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: flex-end !important;
-  justify-content: space-between !important;
-  gap: 24px !important;
-  flex-wrap: wrap !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 16px 32px 0 !important;
-}
-html.qu-x .qu-titlerow .qu-pagetitle {
-  display: block !important;
-  min-width: 0 !important;
-}
 html.qu-x .staticheaders .rightaligntext,
 html.qu-x .rightaligntext {
   font: 400 12px/1.6 var(--x-font-ui) !important;
@@ -3062,7 +3032,6 @@ html.qu-x.qu-ar td.dddefault,
 html.qu-x.qu-ar th.ddlabel {
   unicode-bidi: plaintext !important;
 }
-html.qu-x.qu-ar .staticheaders,
 html.qu-x.qu-ar #welcomemessage,
 html.qu-x.qu-ar .qu-notice h2 {
   font-family: var(--x-font-ar) !important;
@@ -3108,9 +3077,14 @@ html.qu-x.qu-ar td.dddefault {
 }
 
 @media (max-width: 900px) {
-  html.qu-x #welcomemessage,
-  html.qu-x .staticheaders {
+  html.qu-x #welcomemessage {
     font-size: 22px !important;
+  }
+  /* The identity block leaves the crumb's line for its own, start-aligned. */
+  html.qu-x .qu-headrow > .staticheaders {
+    order: 2 !important;
+    flex-basis: 100% !important;
+    text-align: start !important;
   }
   html.qu-x #contentBelt,
   html.qu-x #contentBelt.menucontent {
@@ -3176,12 +3150,36 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x #search,
   html.qu-x #navigationcontrol,
   html.qu-x #navigationcontrolSmall,
-  html.qu-x #crumb,
   html.qu-x .qu-switch,
   html.qu-x #pagefooter,
   html.qu-x #globalFooter,
   html.qu-x .findPageOverlay {
     display: none !important;
+  }
+  /* On paper the crumb's current item is the page's only heading — there is
+     no separate title row — so print it alone, as a heading. */
+  html.qu-x .breadCrumb a:not(.selected),
+  html.qu-x .breadcrumbSeperator,
+  html.qu-x .crumbs a,
+  html.qu-x .crumbs .divider {
+    display: none !important;
+  }
+  html.qu-x .breadCrumb,
+  html.qu-x .crumbs {
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  html.qu-x .breadCrumb a.selected,
+  html.qu-x .crumbs .lastValue {
+    padding: 0 !important;
+    background: none !important;
+    font: 700 20px/1.3 var(--x-font-display) !important;
+    color: #000 !important;
+  }
+  html.qu-x .breadCrumb a.selected::before {
+    content: none !important;
   }
   html.qu-x,
   html.qu-x body {
