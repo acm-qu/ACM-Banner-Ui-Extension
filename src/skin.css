@@ -423,7 +423,10 @@ html.qu-x body {
      removes a whole class of blank pages. */
   display: block !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding-block: 0 !important;
+  /* The frame, once, for every page: whatever the page's structure, all of
+     it sits between these two edges. See 1b. */
+  padding-inline: var(--x-inset) !important;
   min-height: 100vh !important;
 }
 html.qu-x #bodyContainer,
@@ -438,19 +441,59 @@ html.qu-x #pageheader {
   position: static !important;
 }
 
-/* One shared content column. */
+/* Frame once. body carries the only side inset; every structural container
+   inside it spans the frame with no width, margin or padding of its own.
+   Each of these used to re-frame itself (max-width + auto margins + 32px),
+   so wherever one sat inside another their insets stacked and head, body
+   and footer landed on different edges. The legacy sheets add their own:
+   #contentHolder width:95%, #pagebody min-width:911px (100% on leaf pages,
+   which beats any max-width), #contentBelt.menucontent width:861px,
+   .menucontainer width:94%, #globalFooter width:99%. */
+html.qu-x #content,
+html.qu-x #bodyContainer,
 html.qu-x #pageheader,
 html.qu-x #pagebody,
-html.qu-x.qu-leaf .pagebodydiv,
-html.qu-x.qu-leaf #navigationcontrolSmall,
-html.qu-x #navigationcontrol {
+html.qu-x #contentHolder,
+html.qu-x #contentBelt,
+html.qu-x .pagebodydiv,
+html.qu-x #navigationcontrol,
+html.qu-x #navigationcontrolSmall,
+html.qu-x .menucontainer,
+html.qu-x #menuTrackInst,
+html.qu-x .qu-headrow,
+html.qu-x .infotextdiv,
+html.qu-x #globalFooter,
+html.qu-x .qu-public,
+html.qu-x .qu-public-heading {
   box-sizing: border-box !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding-inline: 32px !important;
-}
-html.qu-x.qu-leaf #content.level4 {
+  width: auto !important;
+  min-width: 0 !important;
   max-width: none !important;
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
+}
+/* The footer's negative margins below reach past these; a clip on either
+   would cut its hairline back to the frame. */
+html.qu-x #bodyContainer {
+  overflow: visible !important;
+}
+
+/* Full-bleed bands: their background and hairlines run edge to edge, and
+   their content is re-inset by the same token, so it still meets the frame. */
+html.qu-x #header,
+html.qu-x #pagefooter {
+  box-sizing: border-box !important;
+  width: auto !important;
+  max-width: none !important;
+  float: none !important;
+  margin-inline: calc(-1 * var(--x-inset)) !important;
+  padding-inline: var(--x-inset) !important;
+}
+
+/* Structural line breaks between Cascade's containers (two follow
+   #contentHolder in #pagebody) are spacing, not content. */
+html.qu-x :is(#content, #bodyContainer, #pageheader, #pagebody, #contentHolder) > br {
+  display: none !important;
 }
 
 html.qu-x a {
@@ -483,9 +526,10 @@ html.qu-x [dir='rtl'] {
 
 /* ==========================================================================
    3. GLOBAL BAR — lockup, sign out / help, switcher
-   A 64px band, padding 0 32px, gap 16. Order across it: QU mark · divider ·
-   ACM mark · "Redesign" ····· Sign Out · Help · [QU|ACM] · moon. The search
-   is not in this bar — it sits beside the page title, in section 5.
+   A 64px full-bleed band whose content meets the frame (section 2), gap 16.
+   Order across it: QU mark · divider · ACM mark · "Redesign" ····· Sign Out
+   · Help · [QU|ACM] · moon. The search is not in this bar — it sits in the
+   head row, in section 5.
    ========================================================================== */
 
 html.qu-x #header {
@@ -493,7 +537,7 @@ html.qu-x #header {
   background-image: none !important;
   height: 64px !important;
   min-height: 64px !important;
-  padding: 0 32px !important;
+  padding-block: 0 !important;
   display: flex !important;
   align-items: center !important;
   gap: 16px !important;
@@ -908,9 +952,7 @@ html.qu-x .qu-headrow {
   justify-content: flex-start !important;
   flex-wrap: wrap !important;
   gap: var(--x-s-3) var(--x-s-6) !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 28px 32px 0 !important;
+  padding-block: 28px 0 !important;
 }
 /* Home's left column is the greeting block, several lines tall; the search
    stays level with its first line. */
@@ -1046,13 +1088,13 @@ html.qu-x.qu-ar .breadcrumbSeperator {
   transform: scaleX(-1) !important;
 }
 
-/* Info banner sits under the head row, full column width. */
+/* Info banner sits under the head row, full frame width. It used to carry
+   its own 32px inset, which stacked inside .pagebodydiv's and left every
+   notice 32px narrower than the cards on both sides. */
 html.qu-x #pagebody .infotextdiv,
 html.qu-x .qu-menu .infotextdiv {
   box-sizing: border-box !important;
-  max-width: 1440px !important;
-  margin: 20px auto 0 !important;
-  padding-inline: 32px !important;
+  margin-block: 20px 0 !important;
 }
 
 
@@ -1136,9 +1178,7 @@ html.qu-x #navigationcontrol {
      on top of the crumb bar */
   margin-block: 0 !important;
   box-sizing: border-box !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 20px 32px 0 !important;
+  padding-block: 20px 0 !important;
   background: none !important;
   border: 0 !important;
   display: block !important;
@@ -1254,11 +1294,12 @@ html.qu-x:not(.qu-home) .descriptionText {
 /* --- Home: the five modules become the card grid ----------------------- */
 
 html.qu-x.qu-home #navigationcontrol {
-  padding: 24px 32px 40px !important;
+  padding-block: 24px 40px !important;
 }
 html.qu-x.qu-home #menuTrackInst {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
+  /* minmax(0, …): a long unbroken label must not widen its column */
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 16px !important;
   align-content: start !important;
 }
@@ -1373,16 +1414,19 @@ html.qu-x.qu-home .descriptionText {
 
 /* --- Level-2 card grid ------------------------------------------------- */
 
+/* Three columns, as Cascade lays its rows out: it inserts a level-3 panel
+   after every third card, so any other count strands the panel under the
+   wrong row. minmax(0, …) keeps a long host badge or unbroken Arabic word
+   from widening one column past the others. */
 html.qu-x.qu-menu #contentBelt.menucontent,
 html.qu-x.qu-menu #contentBelt {
   box-sizing: border-box !important;
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 16px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: var(--x-gap-grid) !important;
   align-content: start !important;
-  max-width: 1440px !important;
-  margin: 0 auto !important;
-  padding: 20px 32px 40px !important;
+  margin-block: 0 !important;
+  padding-block: 20px 40px !important;
   background: none !important;
 }
 
@@ -1624,7 +1668,7 @@ html.qu-x #navigationcontrolSmall {
   inset: auto !important;
   padding-block: 12px !important;
   background: none !important;
-  border-bottom: 1px solid var(--x-hairline) !important;
+  border: 0 !important;
   display: block !important;
   height: auto !important;
   width: auto !important;
@@ -2722,18 +2766,24 @@ html.qu-x .reltext {
 html.qu-x .sitemaplink {
   display: inline !important;
 }
+/* The footer is a full-bleed band (section 2): its hairline runs edge to
+   edge and its content meets the frame like every other region's. */
 html.qu-x #pagefooter,
 html.qu-x #globalFooter,
 html.qu-x .disclaimer {
-  max-width: 1440px !important;
-  margin: 0 auto !important;
-  padding: 20px 24px !important;
+  margin-block: 0 !important;
+  padding-block: 16px !important;
   box-sizing: border-box !important;
   font: 400 12px/1.6 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
   background: none !important;
   border-top: 1px solid var(--x-hairline) !important;
   text-align: start !important;
+}
+/* Banner ships #globalFooter empty on every page; styled, it drew a second
+   divider under the real footer. */
+html.qu-x #globalFooter:empty {
+  display: none !important;
 }
 html.qu-x .disclaimer h5 {
   font: 400 12px/1.6 var(--x-font-ui) !important;
@@ -2757,9 +2807,7 @@ html.qu-x .lastaccess {
    inside a display:none .pagebodydiv, so the page is blank on QU's own site;
    enhance.js lifts them into #pagebody as cards. */
 html.qu-x .qu-public-heading {
-  max-width: 1440px !important;
-  margin: 28px auto 0 !important;
-  padding: 0 32px !important;
+  margin-block: 28px 0 !important;
   box-sizing: border-box !important;
   text-align: center !important;
   font: var(--x-w-h1) 28px/1.25 var(--x-font-display) !important;
@@ -2769,10 +2817,8 @@ html.qu-x .qu-public-heading {
 html.qu-x .qu-public {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 16px !important;
-  max-width: 1440px !important;
-  margin: 24px auto 48px !important;
-  padding: 0 32px !important;
+  gap: var(--x-gap-grid) !important;
+  margin-block: 24px 48px !important;
   box-sizing: border-box !important;
 }
 html.qu-x .qu-public-card {
@@ -2954,10 +3000,11 @@ html.qu-x .qu-notice-action:hover {
   color: var(--x-on-brand) !important;
   text-decoration: none !important;
 }
-/* The ORDS 500 page is an Oracle JET document with none of the Banner chrome. */
+/* The ORDS 500 page is an Oracle JET document with none of the Banner chrome.
+   It keeps the frame's side inset, so the notice never touches the edges. */
 html.qu-x.qu-ords body {
   background: var(--x-page) !important;
-  padding: 0 !important;
+  padding-block: 0 !important;
 }
 
 /* ==========================================================================
@@ -3051,28 +3098,18 @@ html.qu-x.qu-ar td.dddefault {
    13. RESPONSIVE — the site is unusable below ~1100px today
    ========================================================================== */
 
+/* Side gutters need no breakpoints here: --x-gutter tracks the viewport
+   (32 at 1440, 20 at 900, 16 at 480) and every region takes it from body. */
 @media (max-width: 1100px) {
   html.qu-x #header {
     flex-wrap: wrap !important;
     height: auto !important;
     min-height: 64px !important;
-    padding: 10px 16px !important;
+    padding-block: 10px !important;
   }
   html.qu-x #search {
     order: 3 !important;
     width: 100% !important;
-  }
-  html.qu-x #pageheader,
-  html.qu-x #pagebody,
-  html.qu-x #contentBelt,
-  html.qu-x .staticheaders,
-  html.qu-x #crumb,
-  html.qu-x .pagebodydiv,
-  html.qu-x #navigationcontrolSmall,
-  html.qu-x #navigationcontrol,
-  html.qu-x #welcomemessage,
-  html.qu-x .qu-public {
-    padding-inline: 16px !important;
   }
 }
 
@@ -3086,9 +3123,15 @@ html.qu-x.qu-ar td.dddefault {
     flex-basis: 100% !important;
     text-align: start !important;
   }
-  html.qu-x #contentBelt,
-  html.qu-x #contentBelt.menucontent {
-    grid-template-columns: 1fr !important;
+  /* One column. These must match the specificity of the three-column rules
+     in section 6 (html.qu-x.qu-menu …, html.qu-x.qu-home …) to override
+     them; the plain html.qu-x #contentBelt never did, so narrow screens kept
+     three squeezed columns. Not two: Cascade breaks rows every three cards
+     for its level-3 panels, and two columns would leave a hole beside each. */
+  html.qu-x.qu-menu #contentBelt,
+  html.qu-x.qu-menu #contentBelt.menucontent,
+  html.qu-x.qu-home #menuTrackInst {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
   html.qu-x #navigationcontrol .menucontainer {
     overflow-x: auto !important;
@@ -3135,6 +3178,11 @@ html.qu-x.qu-ar td.dddefault {
     overflow-x: auto !important;
   }
   html.qu-x .qu-switch .qu-seg:first-child { display: none !important; }
+  /* The level-3 panel spans the one-column grid; two option columns inside
+     it would halve an already narrow width. */
+  html.qu-x #contentBelt ul.items {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
 }
 
 /* ==========================================================================
@@ -3185,6 +3233,10 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x body {
     background: #fff !important;
     color: #000 !important;
+  }
+  /* Paper brings its own margins; the screen frame would add to them. */
+  html.qu-x body {
+    padding-inline: 0 !important;
   }
   html.qu-x table.datadisplaytable {
     border: 1px solid #999 !important;
@@ -3477,12 +3529,11 @@ html.qu-x form[data-qu-gateway] {
   border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-card) !important;
 }
-/* Outranks the #pagebody full-column rule, which insets the banner 32px.
-   Some gateways already ship the notice inside the form, so match both. */
+/* Inside the card the notice is the card's first row. Outranks the
+   #pagebody banner rule; some gateways already ship the notice inside the
+   form, so match both. */
 html.qu-x #pagebody form[data-qu-gateway] .infotextdiv {
-  max-width: none !important;
   margin: 0 0 20px !important;
-  padding-inline: 0 !important;
 }
 html.qu-x form[data-qu-gateway] table.dataentrytable {
   max-width: none !important;
@@ -3662,6 +3713,5 @@ html.qu-x #row2[data-qu-belt-empty] {
   }
   html.qu-x .qu-public-heading {
     font-size: 22px !important;
-    padding-inline: 16px !important;
   }
 }
