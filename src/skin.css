@@ -1942,13 +1942,21 @@ html.qu-x td.pldefault {
   padding: 0 !important;
   margin: 0 !important;
 }
+/* A layout table in a stack still takes the stack's top gap (section 2).
+   No block may zero its own top margin: that one declaration outranks the
+   stack rule, and is how the transcript's first card came to sit flush under
+   its notice while the rail beside it kept its gap. */
+html.qu-x :where(.pagebodydiv, .pagebodydiv form, td.pldefault) > table.plaintable {
+  margin-block-start: var(--x-gap-block) !important;
+}
 html.qu-x.qu-leaf .pagebodydiv {
   padding-block: 0 !important;
   background: none !important;
   border: 0 !important;
 }
 html.qu-x .pagebodydiv form {
-  margin: 0 !important;
+  margin-inline: 0 !important;
+  margin-block-end: 0 !important;
   padding: 0 !important;
 }
 
@@ -2462,7 +2470,13 @@ html.qu-x.qu-transcript table[data-qu-transcript] > tbody {
   background: none !important;
   border-radius: 0 !important;
   overflow: visible !important;
-  margin: 0 !important;
+  margin-inline: 0 !important;
+  margin-block-end: 0 !important;
+}
+/* The table is a block in the column's stack and keeps its top gap from it;
+   only its tbodies (the cards) are zeroed here, and space themselves below. */
+html.qu-x.qu-transcript table[data-qu-transcript] > tbody {
+  margin-block-start: 0 !important;
 }
 html.qu-x.qu-transcript table[data-qu-transcript] tr {
   display: block !important;
