@@ -50,9 +50,6 @@ myBanner tab afterwards.
 **The toolbar popup** — click the extension's icon for the theme (QU maroon or
 ACM mint), the appearance (auto, light, dark) and an on/off switch.
 
-**The header switcher** — the same controls appear in the myBanner page header
-itself, next to Sign Out and Help, including an off button.
-
 Turning it off hands the page straight back to Banner, untouched. Your choices
 are stored in Chrome's own sync storage, so they follow your Chrome profile
 across machines.
@@ -63,9 +60,10 @@ across machines.
 
 | Area | Treatment |
 |---|---|
-| **Global bar** | A 64px band with a co-branded lockup, Sign Out / Help, the theme switcher and an off button |
-| **Menu pages** | On Home the five modules become a card grid. Drilling into a module shows breadcrumb → title → a 3-column card grid with per-item icons, badges naming the destination on links that leave the portal, and a level-3 panel under the open card |
-| **Leaf pages** | Compact navigation, a real page title and identity block, status banners, form cards, and both Banner table shapes — key/value and grid — with sticky headers, tabular numerals and section headings |
+| **Layout** | Every page shares one frame and one spacing scale: the same left and right edges from the header to the footer, and the same gaps between regions and blocks, on every page type and screen width |
+| **Global bar** | A 64px band with a co-branded lockup and Sign Out / Help. Theme, appearance and the on/off switch are in the toolbar popup |
+| **Menu pages** | On Home the five modules become a grid of title-and-description cards. Drilling into a module shows the module row → breadcrumb and search → a 3-column card grid with per-item icons, badges naming the destination on links that leave the portal, and a level-3 panel under the open card |
+| **Leaf pages** | Compact navigation, the breadcrumb with the identity block beside it, status banners, form cards, and both Banner table shapes — key/value and grid — with sticky headers, tabular numerals and section headings |
 | **Arabic labels** | Where the site puts English and Arabic in one run, each half gets its own font, size and text direction |
 | **Signed-out landing** | The six public links that sit hidden in the legacy markup are surfaced as cards |
 | **Academic Transcript** | A sticky "on this page" rail, a print button, per-term headers with standing badges, and a print stylesheet the page never had |
@@ -112,7 +110,7 @@ yourself: `src/enhance.js` and `src/skin.css`.
 ## Troubleshooting
 
 **A page looks wrong, or something is missing.**
-Turn the extension off with the button in the page header. If the page is still
+Turn the extension off from the toolbar popup. If the page is still
 wrong, the problem is on the site's side. If it comes back correct, please
 [open an issue](../../issues) with the page you were on and a screenshot.
 

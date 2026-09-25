@@ -15,7 +15,7 @@ whole extension is a manifest and four files in `src/`:
 |---|---|
 | `manifest.json` | MV3 manifest; injects the content script + sheet at `document_start` |
 | `src/enhance.js` | ~1,900-line content script: page identity, theme, DOM tagging |
-| `src/skin.css` | ~3,600-line sheet, sections 0–17 plus 7b |
+| `src/skin.css` | ~3,700-line sheet, sections 0–17 plus 1b and 7b |
 | `src/popup.html` / `src/popup.js` | Toolbar popup; writes prefs to `chrome.storage.sync` |
 
 ## Development loop
@@ -31,14 +31,20 @@ Console helpers on a Banner page:
 
 ```js
 window.__quEnhancer.stats()   // { enhanced, cards, theme, lang }
+window.__quEnhancer.audit()   // { frame, offFrame: [], gaps: [] } — layout check
 document.querySelectorAll('[data-qu]').length   // must STOP growing as you click
 ```
 
-That second number is the idempotence test — see the lifecycle section below.
+That last number is the idempotence test — see the lifecycle section below.
+`audit()` is the layout test: `offFrame` lists every visible region or body
+block whose edges leave the frame, `gaps` every vertical gap between regions
+or blocks that is not one of the rhythm tokens. It returns geometry and
+selectors only, never page text, and logs nothing. Both lists must be empty.
 
 Before opening a PR, walk a menu page, a leaf page and the Academic Transcript in
-all four theme scopes (`qu-light`, `qu-dark`, `acm-light`, `acm-dark`), and check
-that turning the extension off hands back a clean page.
+all four theme scopes (`qu-light`, `qu-dark`, `acm-light`, `acm-dark`), run
+`audit()` on each at desktop and phone widths, and check that turning the
+extension off hands back a clean page.
 
 ## Non-negotiables
 
@@ -89,6 +95,13 @@ event to hook, so re-running on mutation is not optional.
 **Every branch you add must be a no-op the second time it runs.** The standard
 pattern is `:not([data-qu])` on entry and `el.dataset.qu = '1'` on the way out.
 
+A branch that reads a table, a cell or the page once and then marks it done
+must also wait for `parsed` (`document.readyState !== 'loading'`). The
+observer's rAF fires between parser chunks on long pages, so a one-shot pass
+can otherwise see half a table and never look again — that is how the
+transcript rail once stopped at whichever term the parser had reached. The body
+is hidden until `DOMContentLoaded`, so waiting costs nothing on screen.
+
 A few branches deliberately re-run every pass because Cascade keeps rewriting
 what they fix — inline `height` on level-2 cards, `#menuTrackInst` width,
 `#contentBelt` `left`, `.qu-current` on the active tile, and `.qu-panel-open` on
@@ -127,9 +140,27 @@ level-1 tiles → level-2 cards → level-3 links → current-module marking →
 carousel release → panel-open marking → table shape tagging (`kv` / `grid` /
 `mixed` / `plain`) → gateway forms → duplicate submit suppression → Arabic
 handling → then the page-specific passes: `shapeTables()`, `buildBalancePill()`,
-`classifyMessages()`, `enhanceSearch()`, `enhanceTranscript()`,
-`enhanceAnonymous()`, `handleBlankPage()`, and finally the extension-owned chrome
-(`buildLockup`, `buildSwitcher`, `buildHeadRow`, `buildFooter`).
+`classifyMessages()`, `tagSpacerBreaks()`, `enhanceSearch()`,
+`enhanceTranscript()`, `enhanceAnonymous()`, `handleBlankPage()`, and finally the
+extension-owned chrome (`buildLockup`, `buildHeadRow`, `buildFooter`). The
+global bar carries no controls of ours: theme, appearance and the off switch
+live only in the toolbar popup. The one-shot content passes among these run only once `parsed`.
+
+**Current module.** Exactly one level-1 tile is current. It is resolved each pass
+from one source, the most specific that decodes (via `targetFromId`, so a
+renumbered `___UID` suffix still matches) to a tile: the hash's `pageName`, then
+its `pageReferrerId`, then the breadcrumb's module link, then the page-load
+`?name=`. Never OR these: menu-to-menu navigation is client-side and leaves
+`location.search` alone, so `?name=` goes stale after one drill — matching it
+alongside the hash is how two tiles were once lit at once. The sheet paints the
+current state from `.qu-current-face` only.
+
+**Head row.** `buildHeadRow` owns the only page-head DOM: the crumb (or, on Home,
+the greeting) grows on the left; the identity block (`placeIdentity`, leaf pages)
+and the search pack against the end. There is no page title of our own — the
+crumb's current chip names the page. On a drilled menu the row follows the tile
+row, so navigation sits first on every page type: global bar → module
+navigation → crumb and search → content.
 
 Bilingual handling lives in `splitBilingual()` / `tagArabicOnly()` /
 `stripArabicTail()`; icon resolution in `targetFromId()` → `iconFromLabel()` →
@@ -158,17 +189,57 @@ enabled: true }` — keep them in sync.
 - Section 0 exists because the site sets `font-size: 0.98em` on ~60 element types
   including `html` and `div`, so it compounds per nesting level and 1rem becomes
   15.68px document-wide. Do not remove the reset.
+- **Layout tokens (§1b) are theme-independent** and declared once on `html.qu-x`:
+  the spacing scale `--x-s-1…10` (4 8 12 16 20 24 32 40 48 64), the frame
+  (`--x-frame`, `--x-gutter`, `--x-inset`), the rhythm roles (`--x-gap-top`,
+  `-nav`, `-content`, `-block`, `-grid`, `-end`) and the card text inset
+  `--x-card-x`. Colour and type tokens still need all four scopes; these do not.
+
+### Layout system
+
+Three rules keep every page — including ones nobody has looked at — aligned:
+
+1. **Frame once, on `body`.** `body` carries the only side inset
+   (`padding-inline: var(--x-inset)`). No structural container may set
+   `max-width`, `margin-inline: auto` or `padding-inline` to frame itself; §2
+   neutralises the ones Banner, Cascade and the legacy sheets frame. Nested
+   self-framing containers are how head and body once sat on different edges.
+   Full-bleed bands (`#header`, `#pagefooter`) escape with
+   `margin-inline: calc(-1 * var(--x-inset))` and re-pad with the same token.
+2. **Top gaps only.** Each region and each body block owns only its top gap, from
+   a `--x-gap-*` token; nothing carries a bottom margin. The region gaps live in
+   one place (§2, "Rhythm"). Inside the body, stacks (`.pagebodydiv`, non-card
+   forms, `td.pldefault`, `.qu-transcript-main`) space their block children with
+   `--x-gap-block`; the page body and the transcript column are `flow-root`, so
+   no gap leaks out of them. A new block type joins that selector list (§2,
+   "Stacks") rather than getting its own margin.
+3. **One card inset.** Caption, header, label and value cells share
+   `--x-card-x`, so text inside a card lines up on one edge.
+
+Two component rules follow from real bugs:
+
+- **Radius by role, never hard-coded.** `--x-r-ctl` for tabs and buttons,
+  `--x-r-field` for inputs, `--x-r-pill` for crumb chips and badges,
+  `--x-r-card` for cards, panels and list options, `--x-r-area` for banners,
+  notices and overlays; icon chips are circles. The QU scope squares everything,
+  pseudo-elements included.
+- **Messages are never flex rows.** Their text flows as ordinary inline content
+  and the icon hangs in a padded gutter. As a flex row, every inline element in
+  a message (a `<b>`, a link) became a column of its own.
+
+Module tabs, Home cards and level-3 options carry no icons; only level-2 cards
+do.
 
 Section map — find where a rule belongs before adding one:
 
 ```
  0  FIRST RULES          6  MENU PAGES          12  RTL
  1  TOKENS               7  LEAF PAGES          13  RESPONSIVE
- 2  PAGE FRAME          7b  ACADEMIC TRANSCRIPT 14  PRINT
- 3  GLOBAL BAR           8  FOOTER              15  REDUCED MOTION
- 4  SEARCH               9  ANONYMOUS + SIGN-IN 16  LATE OVERRIDES
- 5  PAGE HEAD           10  EXTENSION NOTICES   17  TABLE SHAPING
-                        11  HELP OVERLAY
+1b  LAYOUT TOKENS       7b  ACADEMIC TRANSCRIPT 14  PRINT
+ 2  PAGE FRAME           8  FOOTER              15  REDUCED MOTION
+ 3  GLOBAL BAR           9  ANONYMOUS + SIGN-IN 16  LATE OVERRIDES
+ 4  SEARCH              10  EXTENSION NOTICES   17  TABLE SHAPING
+ 5  PAGE HEAD           11  HELP OVERLAY
 ```
 
 ## Assets
@@ -183,7 +254,7 @@ and 404s. **Every asset URL is therefore written at runtime through
 - `ICON_VARS` → the `--qu-i-*` custom properties for chrome icons (search,
   chevrons, banner glyphs). Referenced from `skin.css` by variable.
 - `ICONS` (procedure id → icon), `LABEL_ICONS` (regex → icon) and `HOST_ICONS`
-  (external hostname → icon) → per-item card and tile icons, resolved by
+  (external hostname → icon) → per-item level-2 card icons, resolved by
   `iconFor()` and set by `applyIcon()` as an inline `--qu-icon`. A new per-item
   icon goes in one of these three maps.
 
