@@ -2847,11 +2847,15 @@ html.qu-x .qu-attrib-mark {
   color: var(--x-ink) !important;
   white-space: nowrap !important;
 }
+/* The footer carries the extension's release (buildFooter) in place of
+   Banner's, which is hidden rather than reworded. */
 html.qu-x .reltext {
-  display: inline !important;
-  text-transform: none !important;
+  display: none !important;
+}
+html.qu-x .qu-release {
   font: 400 12px/1 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
+  white-space: nowrap !important;
 }
 html.qu-x .sitemaplink {
   display: inline !important;

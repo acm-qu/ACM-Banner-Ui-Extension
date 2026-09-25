@@ -40,6 +40,10 @@
   root.classList.add(isMenuPage ? 'qu-menu' : 'qu-leaf');
   if (menu === 'bmenu.P_MainMnu') root.classList.add('qu-home');
 
+  // The extension's release: the footer shows it and __quEnhancer reports it.
+  // Bump it together with "version" in manifest.json.
+  const VERSION = '0.1.0';
+
   // --- Theme, stamped before first paint ---
 
   const DEFAULTS = { theme: 'qu', mode: 'light', lang: 'en', enabled: true, motion: 'on' };
@@ -677,6 +681,15 @@
   function buildFooter() {
     const foot = document.getElementById('pagefooter');
     if (!foot || foot.querySelector('.qu-attrib')) return;
+    // The footer names the extension's release where Banner names its own.
+    // Banner's .reltext stays in the DOM, untouched, and the sheet hides it,
+    // so turning the extension off brings Banner's release number back.
+    const release = document.createElement('span');
+    release.className = 'qu-release';
+    release.textContent = 'Release: ' + VERSION;
+    const banner = foot.querySelector('.reltext');
+    if (banner) banner.after(release);
+    else foot.appendChild(release);
     const wrap = document.createElement('span');
     wrap.className = 'qu-attrib';
     const text = document.createElement('span');
@@ -1998,7 +2011,7 @@
   // Exposed for debugging from the console only. Holds no page data.
   Object.defineProperty(window, '__quEnhancer', {
     value: Object.freeze({
-      version: '1.0.2',
+      version: VERSION,
       LOGOUT_TRAP: LOGOUT_TRAP,
       hasCredentials: hasCredentials,
       targetFromId: targetFromId,

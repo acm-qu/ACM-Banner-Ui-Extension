@@ -282,7 +282,9 @@ Everything is bundled; nothing is fetched.
 Bump **two** places together:
 
 - `manifest.json` → `version`
-- `src/enhance.js` → `__quEnhancer.version`
+- `src/enhance.js` → `VERSION` (the footer's "Release:" line and `__quEnhancer.version`)
+
+The popup reads its version from the manifest.
 
 There are no git tags. Releases are marked in the commit subject, e.g.
 `Fixed bug where the dropdown would dock right after opening, release as 1.0.2`.
