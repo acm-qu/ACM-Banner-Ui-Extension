@@ -1,4 +1,4 @@
-# myQU Banner — UI Enhancer
+# ACM Banner Redesign
 
 A Chrome extension that restyles **mybanner.qu.edu.qa** in place.
 

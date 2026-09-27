@@ -42,7 +42,7 @@
 
   // The extension's release: the footer shows it and __quEnhancer reports it.
   // Bump it together with "version" in manifest.json.
-  const VERSION = '0.1.0';
+  const VERSION = '1.1.0';
 
   // --- Theme, stamped before first paint ---
 
@@ -684,9 +684,10 @@
     // The footer names the extension's release where Banner names its own.
     // Banner's .reltext stays in the DOM, untouched, and the sheet hides it,
     // so turning the extension off brings Banner's release number back.
+    // Labelled "Redesign", not "Release", so it is never read as Banner's.
     const release = document.createElement('span');
     release.className = 'qu-release';
-    release.textContent = 'Release: ' + VERSION;
+    release.textContent = 'Redesign ' + VERSION;
     const banner = foot.querySelector('.reltext');
     if (banner) banner.after(release);
     else foot.appendChild(release);
