@@ -233,7 +233,6 @@ html.qu-x[data-qux='qu-light'] {
   --x-shadow-card: 0 1px 1px rgba(24, 12, 17, 0.02);
   --x-shadow-pop: 0 2px 6px rgba(24, 12, 17, 0.035);
   --x-shadow-overlay: 0 4px 12px rgba(24, 12, 17, 0.05);
-  --x-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 
 html.qu-x[data-qux='qu-dark'] {
@@ -304,7 +303,6 @@ html.qu-x[data-qux='acm-light'] {
   --x-shadow-card: none;
   --x-shadow-pop: 4px 4px 0 0 #2fbbab;
   --x-shadow-overlay: 6px 6px 0 0 #2fbbab;
-  --x-ease: cubic-bezier(0, 0.8, 0.2, 1);
 }
 
 html.qu-x[data-qux='acm-dark'] {
@@ -347,13 +345,67 @@ html.qu-x[data-qux='acm-dark'] {
   --x-shadow-card: none;
   --x-shadow-pop: 4px 4px 0 0 #2fbbab;
   --x-shadow-overlay: 6px 6px 0 0 #2fbbab;
-  --x-ease: cubic-bezier(0, 0.8, 0.2, 1);
+}
+
+/* ==========================================================================
+   1b. LAYOUT TOKENS — geometry is theme-independent, so these are declared
+   once and inherited by all four scopes. Colour and type tokens above still
+   need a value in every scope; these do not.
+   ========================================================================== */
+
+html.qu-x {
+  /* The design's 4-base spacing scale, s-1 … s-10. */
+  --x-s-1: 4px;
+  --x-s-2: 8px;
+  --x-s-3: 12px;
+  --x-s-4: 16px;
+  --x-s-5: 20px;
+  --x-s-6: 24px;
+  --x-s-7: 32px;
+  --x-s-8: 40px;
+  --x-s-9: 48px;
+  --x-s-10: 64px;
+
+  /* The frame. Every region of every page shares these two edges: 1376px of
+     content (the 1440 artboards less their 32px gutters), centred above that,
+     and a gutter that tracks the artboards — 32 at 1440, 20 at 900, 16 at 480.
+     The inset is viewport-based so it resolves to the same length at any
+     depth; a classic scrollbar then shifts every edge by the same amount. */
+  --x-frame: 1376px;
+  --x-gutter: clamp(16px, 2.2222vw, 32px);
+  --x-inset: max(var(--x-gutter), calc((100vw - var(--x-frame)) / 2));
+
+  /* Rhythm. The only vertical gaps between page regions and body blocks.
+     Each region and block owns its top gap; nothing carries a bottom margin.
+     Navigation → content is larger than block → block, so content groups with
+     content and not with the navigation above it. */
+  --x-gap-top: var(--x-s-6); /* global bar → first region */
+  --x-gap-nav: var(--x-s-4); /* navigation row → navigation row */
+  --x-gap-content: var(--x-s-7); /* navigation → content */
+  --x-gap-block: var(--x-s-4); /* block → block inside content */
+  --x-gap-grid: var(--x-s-4); /* card grids, both axes */
+  --x-gap-end: var(--x-s-9); /* content → footer */
+
+  /* Text inset inside a card: caption, header, label and value cells share
+     it, so their text lines up on one edge. */
+  --x-card-x: var(--x-s-5);
+
+  /* Motion. One easing for everything that moves; hover changes take 0.5s,
+     panels that open take 0.7s. The popup's Animations switch and the OS
+     reduced-motion setting zero the durations (sections 15, 1b). */
+  --x-ease: cubic-bezier(0, 0.78, 0.28, 1);
+  --x-dur-hover: 0.5s;
+  --x-dur-reveal: 0.7s;
+  /* lets height: auto take part in a transition (the panels' slide-down) */
+  interpolate-size: allow-keywords !important;
 }
 
 /* The QU theme is sharp-cornered everywhere, including shapes that carry a
-   hardcoded radius. The ACM theme keeps its pill-and-square language. */
-html.qu-x[data-qux^='qu-'] #content *,
-html.qu-x[data-qux^='qu-'] #header * {
+   hardcoded radius and shapes drawn by pseudo-elements (icon chips, empty
+   states). The ACM theme keeps its pill-and-square language. */
+html.qu-x[data-qux^='qu-'] body *,
+html.qu-x[data-qux^='qu-'] body *::before,
+html.qu-x[data-qux^='qu-'] body *::after {
   border-radius: 0 !important;
 }
 
@@ -379,7 +431,10 @@ html.qu-x body {
      removes a whole class of blank pages. */
   display: block !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding-block: 0 !important;
+  /* The frame, once, for every page: whatever the page's structure, all of
+     it sits between these two edges. See 1b. */
+  padding-inline: var(--x-inset) !important;
   min-height: 100vh !important;
 }
 html.qu-x #bodyContainer,
@@ -394,19 +449,139 @@ html.qu-x #pageheader {
   position: static !important;
 }
 
-/* One shared content column. */
+/* Frame once. body carries the only side inset; every structural container
+   inside it spans the frame with no width, margin or padding of its own.
+   Each of these used to re-frame itself (max-width + auto margins + 32px),
+   so wherever one sat inside another their insets stacked and head, body
+   and footer landed on different edges. The legacy sheets add their own:
+   #contentHolder width:95%, #pagebody min-width:911px (100% on leaf pages,
+   which beats any max-width), #contentBelt.menucontent width:861px,
+   .menucontainer width:94%, #globalFooter width:99%. */
+html.qu-x #content,
+html.qu-x #bodyContainer,
 html.qu-x #pageheader,
 html.qu-x #pagebody,
-html.qu-x.qu-leaf .pagebodydiv,
-html.qu-x.qu-leaf #navigationcontrolSmall,
-html.qu-x #navigationcontrol {
+html.qu-x #contentHolder,
+html.qu-x #contentBelt,
+html.qu-x .pagebodydiv,
+html.qu-x #navigationcontrol,
+html.qu-x #navigationcontrolSmall,
+html.qu-x .menucontainer,
+html.qu-x #menuTrackInst,
+html.qu-x .qu-headrow,
+html.qu-x .infotextdiv,
+html.qu-x #globalFooter,
+html.qu-x .qu-public,
+html.qu-x .qu-public-heading {
   box-sizing: border-box !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding-inline: 32px !important;
-}
-html.qu-x.qu-leaf #content.level4 {
+  width: auto !important;
+  min-width: 0 !important;
   max-width: none !important;
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
+}
+/* The footer's negative margins below reach past these; a clip on either
+   would cut its hairline back to the frame. */
+html.qu-x #bodyContainer {
+  overflow: visible !important;
+}
+
+/* Full-bleed bands: their background and hairlines run edge to edge, and
+   their content is re-inset by the same token, so it still meets the frame. */
+html.qu-x #header,
+html.qu-x #pagefooter {
+  box-sizing: border-box !important;
+  width: auto !important;
+  max-width: none !important;
+  float: none !important;
+  margin-inline: calc(-1 * var(--x-inset)) !important;
+  padding-inline: var(--x-inset) !important;
+}
+
+/* Rhythm. Each region owns only its top gap, from the role tokens in 1b,
+   and nothing carries a bottom margin — so the gap between any two regions
+   is exactly one token, whichever regions a page happens to have. Order down
+   every page: global bar → module navigation → crumb and search → content →
+   footer (home has no module row; its modules are the content). */
+html.qu-x #navigationcontrolSmall,
+html.qu-x .qu-headrow,
+html.qu-x.qu-menu:not(.qu-home) #navigationcontrol {
+  margin-block: var(--x-gap-top) 0 !important;
+}
+/* the crumb row under a module row */
+html.qu-x:has(#navigationcontrolSmall) .qu-headrow,
+html.qu-x #navigationcontrol + .qu-headrow {
+  margin-block: var(--x-gap-nav) 0 !important;
+}
+/* navigation → content */
+html.qu-x.qu-menu:not(.qu-home) #contentHolder,
+html.qu-x.qu-home #navigationcontrol,
+html.qu-x.qu-menu #pagebody > .infotextdiv {
+  margin-block: var(--x-gap-content) 0 !important;
+}
+html.qu-x.qu-menu #pagebody > .infotextdiv ~ #navigationcontrol {
+  margin-block: var(--x-gap-block) 0 !important;
+}
+
+/* Stacks. Inside the page body every block — table, form card, notice,
+   message, section head — owns only its top gap. The stack is a flow-root,
+   so no gap leaks out through it, and its own start margin supplies the rest
+   of --x-gap-content; a block that is hidden or missing then costs nothing.
+   td.pldefault counts because Banner nests whole pages inside layout tables,
+   which the sheet flattens to plain blocks. :where() keeps the block rule at
+   a plain class's weight, so a component that spaces itself (the sign-in
+   card, the gateway card's insides) still wins. */
+html.qu-x.qu-leaf .pagebodydiv,
+html.qu-x .qu-transcript-main {
+  display: flow-root !important;
+}
+html.qu-x.qu-leaf .pagebodydiv {
+  margin-block: calc(var(--x-gap-content) - var(--x-gap-block)) 0 !important;
+}
+html.qu-x
+  :where(.pagebodydiv, .pagebodydiv form:not([data-qu-gateway]), td.pldefault, .qu-transcript-main)
+  > :where(table, form, .infotextdiv, .errortext, .warningtext, .qu-section-head) {
+  margin-block: var(--x-gap-block) 0 !important;
+}
+
+/* A run of <br> that enhance.js found bounded by blocks on both sides:
+   spacing the rhythm already provides, not a line break in running text. */
+html.qu-x br[data-qu-br='gap'] {
+  display: none !important;
+}
+
+/* Structural line breaks between Cascade's containers (two follow
+   #contentHolder in #pagebody) are spacing, not content. */
+html.qu-x :is(#content, #bodyContainer, #pageheader, #pagebody, #contentHolder) > br {
+  display: none !important;
+}
+
+/* The popup's Animations switch (data-qux-motion, written by stampTheme):
+   off makes every transition instant, the slide-downs included. */
+html.qu-x[data-qux-motion='off'] {
+  --x-dur-hover: 0.01ms;
+  --x-dur-reveal: 0.01ms;
+}
+html.qu-x[data-qux-motion='off'] *,
+html.qu-x[data-qux-motion='off'] *::before,
+html.qu-x[data-qux-motion='off'] *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}
+
+/* Every colour, border and shadow change eases in — hover, focus, a tab
+   becoming current — so nothing on the page snaps. Opacity, transforms and
+   sizes are left out on purpose: Cascade animates some of those itself with
+   jQuery, and a CSS transition on top would drag its frames. A component that
+   moves (a chevron turning, an option's label sliding) names transform in its
+   own, more specific rule. */
+html.qu-x body *,
+html.qu-x body *::before,
+html.qu-x body *::after {
+  transition-property: color, background-color, border-color, box-shadow, outline-color,
+    text-decoration-color, fill, stroke !important;
+  transition-duration: var(--x-dur-hover) !important;
+  transition-timing-function: var(--x-ease) !important;
 }
 
 html.qu-x a {
@@ -439,17 +614,20 @@ html.qu-x [dir='rtl'] {
 
 /* ==========================================================================
    3. GLOBAL BAR — lockup, sign out / help, switcher
-   A 64px band, padding 0 32px, gap 16. Order across it: QU mark · divider ·
-   ACM mark · "Redesign" ····· Sign Out · Help · [QU|ACM] · moon. The search
-   is not in this bar — it sits beside the page title, in section 5.
+   An 84px full-bleed band whose content meets the frame (section 2), gap 16.
+   The marks are drawn 1.5x the design's lockup size (QU 60px, ACM 45px),
+   with the same 12px of air above and below as the 40px mark had in 64px.
+   Order across it: QU mark · divider · ACM mark · "Redesign" ····· Sign Out
+   · Help. Theme, appearance and the off switch live in the toolbar popup
+   only. The search is not in this bar — it sits in the head row, section 5.
    ========================================================================== */
 
 html.qu-x #header {
   background: var(--x-header-bg) !important;
   background-image: none !important;
-  height: 64px !important;
-  min-height: 64px !important;
-  padding: 0 32px !important;
+  height: 84px !important;
+  min-height: 84px !important;
+  padding-block: 0 !important;
   display: flex !important;
   align-items: center !important;
   gap: 16px !important;
@@ -465,16 +643,16 @@ html.qu-x .institutionalBranding { order: 1 !important; }
 html.qu-x .qu-lockup-acm { order: 2 !important; }
 html.qu-x #globalNav { order: 3 !important; margin-inline-start: auto !important; }
 
-/* QU mark: 40px tall, first, and never smaller than the ACM mark.
-   The source image is 352x249, so 40px tall is ~57px wide. */
+/* QU mark: 60px tall, first, and never smaller than the ACM mark.
+   The source image is 352x249, so 60px tall is 85px wide. */
 html.qu-x .institutionalBranding {
   position: static !important;
   inset: auto !important;
   vertical-align: middle !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 57px !important;
-  height: 40px !important;
+  width: 85px !important;
+  height: 60px !important;
   flex: none !important;
   align-self: center !important;
   display: block !important;
@@ -493,13 +671,13 @@ html.qu-x .qu-lockup-acm {
 }
 html.qu-x .qu-lockup-divider {
   width: 1px !important;
-  height: 32px !important;
+  height: 48px !important;
   flex: none !important;
   background: color-mix(in srgb, var(--x-header-ink) 35%, transparent) !important;
 }
 html.qu-x .qu-lockup-mark {
-  width: 30px !important;
-  height: 30px !important;
+  width: 45px !important;
+  height: 45px !important;
   flex: none !important;
   background-image: var(--qu-acm-mark) !important;
   background-size: contain !important;
@@ -518,6 +696,11 @@ html.qu-x[data-qux^='acm-'] .qu-lockup-word {
   font-weight: 700 !important;
   color: #3ae4d1 !important;
 }
+/* The band is brand-coloured, so a focus ring in the brand colour vanishes
+   into it; inside the band the ring takes the band's ink. */
+html.qu-x #header :focus-visible {
+  outline-color: var(--x-header-ink) !important;
+}
 
 /* Sign Out / Help — plain text, no icons, vertically centred in the band. */
 html.qu-x #globalNav {
@@ -525,6 +708,9 @@ html.qu-x #globalNav {
   position: static !important;
   inset: auto !important;
   margin-block: 0 !important;
+  /* the legacy sheet adds 19px here, which held the links off the frame's
+     end edge */
+  margin-inline-end: 0 !important;
   padding: 0 !important;
   flex: none !important;
   display: flex !important;
@@ -576,106 +762,6 @@ html.qu-x #globalNav a:hover {
 html.qu-x #globalNav a::before,
 html.qu-x #globalNav a::after {
   content: none !important;
-}
-
-/* --- Theme switcher (extension-owned; the only new control) ------------ */
-
-html.qu-x .qu-switch {
-  display: flex !important;
-  align-items: center !important;
-  gap: 16px !important;
-}
-html.qu-x .qu-seg {
-  display: inline-flex !important;
-  align-items: center !important;
-  flex: none !important;
-  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
-  border-radius: 999px !important;
-  overflow: hidden !important;
-}
-html.qu-x .qu-seg-btn {
-  font: 600 11px/1 var(--x-font-ui) !important;
-  padding: 8px 12px !important;
-  border: 0 !important;
-  margin: 0 !important;
-  background: none !important;
-  color: var(--x-header-ink) !important;
-  opacity: 0.75 !important;
-  cursor: pointer !important;
-  white-space: nowrap !important;
-  transition: background 0.15s var(--x-ease), opacity 0.15s var(--x-ease) !important;
-}
-html.qu-x .qu-seg-btn[data-qu-lang='ar'] {
-  font: 700 11px/1.2 var(--x-font-ar) !important;
-  padding: 6px 12px !important;
-}
-html.qu-x .qu-seg-btn:hover {
-  opacity: 1 !important;
-}
-html.qu-x .qu-seg-btn[aria-pressed='true'] {
-  background: color-mix(in srgb, var(--x-header-ink) 18%, transparent) !important;
-  opacity: 1 !important;
-}
-html.qu-x[data-qux^='acm-'] .qu-seg-btn[aria-pressed='true'] {
-  background: #3ae4d1 !important;
-  color: #010000 !important;
-}
-/* One control, two states — moon to go dark, sun to come back. */
-html.qu-x .qu-mode-btn {
-  width: 32px !important;
-  height: 32px !important;
-  flex: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
-  border-radius: 999px !important;
-  background: none !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.qu-x .qu-mode-btn::before {
-  content: '' !important;
-  width: 15px !important;
-  height: 15px !important;
-  background: var(--x-header-ink) !important;
-  -webkit-mask: var(--qu-i-moon) center / contain no-repeat !important;
-  mask: var(--qu-i-moon) center / contain no-repeat !important;
-}
-html.qu-x[data-qux$='-dark'] .qu-mode-btn::before {
-  -webkit-mask-image: var(--qu-i-sun) !important;
-  mask-image: var(--qu-i-sun) !important;
-}
-html.qu-x .qu-off-btn {
-  width: 32px !important;
-  height: 32px !important;
-  flex: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: 1px solid color-mix(in srgb, var(--x-header-ink) 45%, transparent) !important;
-  border-radius: 999px !important;
-  background: none !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.qu-x .qu-off-btn::before {
-  content: '' !important;
-  width: 14px !important;
-  height: 14px !important;
-  background: var(--x-header-ink) !important;
-  -webkit-mask: var(--qu-i-x) center / contain no-repeat !important;
-  mask: var(--qu-i-x) center / contain no-repeat !important;
-}
-html.qu-x .qu-off-btn:hover {
-  background: color-mix(in srgb, var(--x-header-ink) 15%, transparent) !important;
-}
-
-html.qu-x .qu-switch :focus-visible {
-  outline: 2px solid var(--x-header-ink) !important;
-  outline-offset: 2px !important;
 }
 
 /* ==========================================================================
@@ -772,6 +858,10 @@ html.qu-x .closeicon {
 /* --- Results overlay -------------------------------------------------- */
 
 html.qu-x .findPageOverlay {
+  /* slides down from nothing when it appears: see @starting-style below */
+  transition-property: height, padding-block !important;
+  transition-duration: var(--x-dur-reveal) !important;
+  height: auto !important;
   position: absolute !important;
   top: calc(100% + 8px) !important;
   inset-inline-end: 0 !important;
@@ -785,6 +875,12 @@ html.qu-x .findPageOverlay {
   box-shadow: var(--x-shadow-overlay) !important;
   padding: 8px !important;
   z-index: 60 !important;
+}
+@starting-style {
+  html.qu-x .findPageOverlay {
+    height: 0 !important;
+    padding-block: 0 !important;
+  }
 }
 html.qu-x .findPageOverlay hr {
   display: none !important;
@@ -821,7 +917,7 @@ html.qu-x a.ac_odd {
   color: var(--x-body) !important;
   background: none !important;
   border: 0 !important;
-  border-radius: 6px !important;
+  border-radius: var(--x-r-card) !important;
   text-decoration: none !important;
 }
 html.qu-x .findPageOverlay li a::before {
@@ -854,16 +950,25 @@ html.qu-x .findPageOverlay strong {
 
 /* The head row is extension-owned DOM: the welcome, the crumb and the search
    are siblings in the source with no common wrapper, so this puts the first
-   two in a left column with the search opposite. */
+   two in a left column that grows, and whatever follows it — the identity
+   block on leaf pages, then the search — packs against the end edge. There
+   is no page title: the crumb's current chip already names the page. */
 html.qu-x .qu-headrow {
   box-sizing: border-box !important;
   display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: var(--x-s-3) var(--x-s-6) !important;
+  padding-block: 0 !important;
+}
+/* Home's left column is the greeting block, several lines tall; the search
+   stays level with its first line. */
+html.qu-x.qu-home .qu-headrow {
   align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 24px !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 28px 32px 0 !important;
+}
+html.qu-x .qu-headrow > .staticheaders {
+  align-self: center !important;
 }
 html.qu-x .qu-headleft {
   min-width: 0 !important;
@@ -880,11 +985,7 @@ html.qu-x:not(.qu-home) .qu-headleft > #crumb,
 html.qu-x:not(.qu-home) .qu-headleft > .crumbs { order: 1 !important; margin: 0 !important; }
 
 
-/* The module row stays on drilled menus, between the crumb bar and the page
-   title, with the current module filled. */
-
-html.qu-x #welcomemessage,
-html.qu-x .qu-pagetitle {
+html.qu-x #welcomemessage {
   font: var(--x-w-h1) 28px/1.25 var(--x-font-display) !important;
   min-height: 0 !important;
   color: var(--x-ink) !important;
@@ -900,24 +1001,10 @@ html.qu-x .qu-pagetitle {
 html.qu-x .qu-name {
   color: var(--x-brand-text) !important;
 }
-/* The welcome greets you on the home grid; a drilled menu shows its own name
-   instead, taken from the breadcrumb. */
+/* The welcome greets you on the home grid only. */
 html.qu-x:not(.qu-home) #welcomemessage,
 html.qu-x:not(.qu-home) .qu-subtitle {
   display: none !important;
-}
-html.qu-x.qu-home .qu-pagetitle {
-  display: none !important;
-}
-html.qu-x .qu-pagetitle .qu-en {
-  display: block !important;
-  text-align: start !important;
-}
-html.qu-x .qu-pagetitle .qu-ar {
-  display: block !important;
-  text-align: start !important;
-  font: 700 24px/1.7 var(--x-font-ar) !important;
-  color: var(--x-ink) !important;
 }
 /* "to myBanner Self Service" — the tail of the server's own welcome string,
    set as a subtitle. The diamond is the brand's rotated square, decoration
@@ -971,7 +1058,7 @@ html.qu-x .breadCrumb a {
   padding: 6px 12px !important;
   font: 500 13px/1 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
-  border-radius: 999px !important;
+  border-radius: var(--x-r-pill) !important;
   text-decoration: none !important;
   background: none !important;
 }
@@ -1009,14 +1096,9 @@ html.qu-x.qu-ar .breadcrumbSeperator {
   transform: scaleX(-1) !important;
 }
 
-/* Info banner sits under the head row, full column width. */
-html.qu-x #pagebody .infotextdiv,
-html.qu-x .qu-menu .infotextdiv {
-  box-sizing: border-box !important;
-  max-width: 1440px !important;
-  margin: 20px auto 0 !important;
-  padding-inline: 32px !important;
-}
+/* Info banners span the frame; the rhythm block (section 2) places them. They
+   used to carry their own 32px inset, which stacked inside .pagebodydiv's and
+   left every notice 32px narrower than the cards on both sides. */
 
 
 
@@ -1050,7 +1132,7 @@ html.qu-x .crumbs > span {
 }
 html.qu-x .crumbs a {
   padding: 6px 12px !important;
-  border-radius: 999px !important;
+  border-radius: var(--x-r-pill) !important;
   font: 500 13px/1 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
   text-decoration: none !important;
@@ -1062,7 +1144,7 @@ html.qu-x .crumbs a:hover {
 }
 html.qu-x .crumbs .lastValue {
   padding: 6px 12px !important;
-  border-radius: 999px !important;
+  border-radius: var(--x-r-pill) !important;
   background: var(--x-brand-tint) !important;
   color: var(--x-brand-text) !important;
   font-weight: 600 !important;
@@ -1099,9 +1181,7 @@ html.qu-x #navigationcontrol {
      on top of the crumb bar */
   margin-block: 0 !important;
   box-sizing: border-box !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 20px 32px 0 !important;
+  padding-block: 0 !important;
   background: none !important;
   border: 0 !important;
   display: block !important;
@@ -1158,16 +1238,10 @@ html.qu-x:not(.qu-home) .menubaseButton .menu {
   border-radius: var(--x-r-ctl) !important;
   color: var(--x-ink) !important;
   width: auto !important;
-  transition: background 0.15s var(--x-ease), color 0.15s var(--x-ease) !important;
 }
+/* The module tabs are words only — no icons, as on the Home cards. */
 html.qu-x:not(.qu-home) .menubaseButton .menu::before {
-  content: '' !important;
-  width: 18px !important;
-  height: 18px !important;
-  flex: none !important;
-  background: var(--x-brand-text) !important;
-  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
-  mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+  content: none !important;
 }
 html.qu-x:not(.qu-home) .menubaseButton .menu div {
   background: none !important;
@@ -1181,6 +1255,8 @@ html.qu-x:not(.qu-home) .menubaseButton .menu div {
   text-align: start !important;
 }
 html.qu-x:not(.qu-home) .menubaseButton .menu div span {
+  padding: 0 !important;
+  height: auto !important;
   font: 600 14px/1.2 var(--x-font-ui) !important;
   color: inherit !important;
   background: none !important;
@@ -1198,17 +1274,14 @@ html.qu-x:not(.qu-home) .menubaseButton:focus-visible .menu {
   outline: 2px solid var(--x-focus) !important;
   outline-offset: 2px !important;
 }
-html.qu-x:not(.qu-home) .menubaseButton .menu.menuHighlight,
-html.qu-x:not(.qu-home) .menubaseButton.selected .menu,
-html.qu-x:not(.qu-home) .menuitem.selected .menubaseButton .menu,
+/* The current module has one source of truth: .qu-current-face, which
+   enhance.js resolves to exactly one tile per pass. Cascade's own
+   .menuHighlight / .selected are not painted — a second painter is how two
+   tiles ended up filled at once. */
 html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face {
   background: var(--x-brand) !important;
   background-color: var(--x-brand) !important;
   color: var(--x-on-brand) !important;
-}
-html.qu-x:not(.qu-home) .menubaseButton .menu.qu-current-face::before,
-html.qu-x:not(.qu-home) .menubaseButton .menu.menuHighlight::before {
-  background: var(--x-on-brand) !important;
 }
 html.qu-x:not(.qu-home) .descriptionText {
   display: none !important;
@@ -1217,11 +1290,12 @@ html.qu-x:not(.qu-home) .descriptionText {
 /* --- Home: the five modules become the card grid ----------------------- */
 
 html.qu-x.qu-home #navigationcontrol {
-  padding: 24px 32px 40px !important;
+  padding-block: 0 !important;
 }
 html.qu-x.qu-home #menuTrackInst {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
+  /* minmax(0, …): a long unbroken label must not widen its column */
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 16px !important;
   align-content: start !important;
 }
@@ -1238,7 +1312,6 @@ html.qu-x.qu-home .menuitem {
   border: 1px solid var(--x-hairline) !important;
   border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-card) !important;
-  transition: border-color 0.15s var(--x-ease) !important;
 }
 html.qu-x.qu-home .menuitem:hover {
   border-color: var(--x-brand-text) !important;
@@ -1246,12 +1319,11 @@ html.qu-x.qu-home .menuitem:hover {
 html.qu-x.qu-home .menubaseButton {
   display: contents !important;
 }
+/* Home module cards carry a title and a description, nothing else: no icon
+   chip and no chevron. */
 html.qu-x.qu-home .menubaseButton .menu {
   position: relative !important;
-  display: grid !important;
-  grid-template-columns: 40px 1fr 16px !important;
-  column-gap: 12px !important;
-  align-items: center !important;
+  display: block !important;
   background: none !important;
   background-image: none !important;
   background-color: transparent !important;
@@ -1262,30 +1334,12 @@ html.qu-x.qu-home .menubaseButton .menu {
   width: auto !important;
   height: auto !important;
 }
-/* chip and icon occupy the same grid cell, so the icon is centred by the
-   mask rather than by hand-positioned offsets */
-html.qu-x.qu-home .menubaseButton .menu::before {
-  content: '' !important;
-  grid-area: 1 / 1 !important;
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50% !important;
-  background: var(--x-brand-tint) !important;
-}
-html.qu-x.qu-home .menubaseButton .menu::after {
-  content: '' !important;
-  grid-area: 1 / 1 !important;
-  width: 40px !important;
-  height: 40px !important;
-  background: var(--x-brand-text) !important;
-  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
-  mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
-}
-html.qu-x[data-qux^='acm-'].qu-home .menubaseButton .menu::before {
-  border-radius: 0 !important;
+html.qu-x.qu-home .menubaseButton .menu::before,
+html.qu-x.qu-home .menubaseButton .menu::after,
+html.qu-x.qu-home .menubaseButton .menu > div::after {
+  content: none !important;
 }
 html.qu-x.qu-home .menubaseButton .menu > div {
-  grid-area: 1 / 2 !important;
   text-align: start !important;
   background: none !important;
   margin: 0 !important;
@@ -1296,6 +1350,9 @@ html.qu-x.qu-home .menubaseButton .menu > div {
 }
 html.qu-x.qu-home .menubaseButton .menu > div > span {
   display: block !important;
+  /* the legacy sheets pad the label 15px 10px for their sprite button */
+  padding: 0 !important;
+  height: auto !important;
   text-align: start !important;
   font: var(--x-w-h3) 16px/1.3 var(--x-font-ui) !important;
   color: var(--x-ink) !important;
@@ -1309,17 +1366,6 @@ html.qu-x.qu-home .menubaseButton .menu > div > span .qu-ar {
   display: block !important;
   font: 700 15px/1.7 var(--x-font-ar) !important;
   color: var(--x-ink) !important;
-}
-html.qu-x.qu-home .menubaseButton .menu > div::after {
-  content: '' !important;
-  position: absolute !important;
-  inset-inline-end: 0 !important;
-  top: 0 !important;
-  width: 16px !important;
-  height: 40px !important;
-  background: var(--x-muted) !important;
-  -webkit-mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
-  mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
 }
 html.qu-x.qu-home .descriptionText {
   grid-column: 1 / -1 !important;
@@ -1336,16 +1382,19 @@ html.qu-x.qu-home .descriptionText {
 
 /* --- Level-2 card grid ------------------------------------------------- */
 
+/* Three columns, as Cascade lays its rows out: it inserts a level-3 panel
+   after every third card, so any other count strands the panel under the
+   wrong row. minmax(0, …) keeps a long host badge or unbroken Arabic word
+   from widening one column past the others. */
 html.qu-x.qu-menu #contentBelt.menucontent,
 html.qu-x.qu-menu #contentBelt {
   box-sizing: border-box !important;
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 16px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: var(--x-gap-grid) !important;
   align-content: start !important;
-  max-width: 1440px !important;
-  margin: 0 auto !important;
-  padding: 20px 32px 40px !important;
+  margin-block: 0 !important;
+  padding-block: 0 !important;
   background: none !important;
 }
 
@@ -1368,7 +1417,6 @@ html.qu-x .htmlButtonLevel2-3 {
   border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-card) !important;
   cursor: pointer !important;
-  transition: border-color 0.15s var(--x-ease), box-shadow 0.15s var(--x-ease) !important;
 }
 html.qu-x .htmlButtonLevel2-3::before {
   content: '' !important;
@@ -1387,9 +1435,6 @@ html.qu-x .htmlButtonLevel2-3::after {
   -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
   mask: var(--qu-icon, var(--qu-i-default)) center / 20px 20px no-repeat !important;
   pointer-events: none !important;
-}
-html.qu-x[data-qux^='acm-'] .htmlButtonLevel2-3::before {
-  border-radius: 0 !important;
 }
 html.qu-x .htmlButtonLevel2-3 h3 {
   grid-area: 1 / 2 !important;
@@ -1419,7 +1464,7 @@ html.qu-x .htmlButtonLevel2-3[data-qu-has-children] h3::after {
   background: var(--x-muted) !important;
   -webkit-mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
   mask: var(--qu-i-chevron-down) center / 16px 16px no-repeat !important;
-  transition: transform 0.2s var(--x-ease) !important;
+  transition-property: transform, background-color !important;
 }
 html.qu-x .htmlButtonLevel2-3.selected h3::after {
   transform: rotate(180deg) !important;
@@ -1496,24 +1541,39 @@ html.qu-x #contentBelt > [id='level3Container'] {
 }
 html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
   display: block !important;
+  /* slides down from nothing when it opens: see @starting-style below */
+  overflow: hidden !important;
+  transition-property: height, padding-block, background-color, border-color !important;
+  transition-duration: var(--x-dur-reveal) !important;
   background: var(--x-brand-tint) !important;
   border: 1px solid var(--x-brand-tint-border) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   padding: 8px !important;
+}
+@starting-style {
+  html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
+    height: 0 !important;
+    padding-block: 0 !important;
+  }
 }
 html.qu-x #contentBelt ul.items {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 2px !important;
+  gap: 4px !important;
   list-style: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
+/* Cascade writes an inline height on every option (height:49px), sized for
+   its one-line labels. The bilingual split stacks English over Arabic, so a
+   two-line option overflowed into the next one and their text overlapped. */
 html.qu-x #contentBelt ul.items > li {
   list-style: none !important;
   margin: 0 !important;
   padding: 0 !important;
   background: none !important;
+  height: auto !important;
+  min-height: 0 !important;
 }
 /* The li is a grid item and stretches to the tallest option in its row, but
    the a inside it is not, and only ever took its own content height. Options
@@ -1524,30 +1584,66 @@ html.qu-x #contentBelt ul.items > li {
 html.qu-x #contentBelt ul.items > li > a {
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 12px !important;
+  /* cascade.css floats each option at a fixed 250px, which wrapped every
+     label into a narrow strip of a column three times as wide */
+  float: none !important;
+  width: auto !important;
   height: 100% !important;
   box-sizing: border-box !important;
-  padding: 12px 14px !important;
-  border-radius: 6px !important;
+  padding: 12px 16px !important;
+  min-height: 44px !important;
+  color: var(--x-ink) !important;
+  border-radius: var(--x-r-card) !important;
   background: none !important;
   text-decoration: none !important;
 }
+/* Options carry no icon; a quiet chevron at the end says each one opens a
+   page. It follows the text colour, so it turns with the hover. */
 html.qu-x #contentBelt ul.items > li > a::before {
-  content: '' !important;
-  width: 16px !important;
-  height: 16px !important;
-  flex: none !important;
-  background: var(--x-brand-text) !important;
-  -webkit-mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
-  mask: var(--qu-icon, var(--qu-i-default)) center / contain no-repeat !important;
+  content: none !important;
 }
+html.qu-x #contentBelt ul.items > li > a::after {
+  content: '' !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex: none !important;
+  background: currentColor !important;
+  opacity: 0.55 !important;
+  -webkit-mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+  mask: var(--qu-i-chevron-right) center / contain no-repeat !important;
+}
+html.qu-x.qu-ar #contentBelt ul.items > li > a::after {
+  transform: scaleX(-1) !important;
+}
+/* Hover: the option's text takes the primary colour and its label slides
+   5px toward the reading end. Dark scopes use the primary's lifted text tone,
+   since plain maroon on near-black would not read. */
 html.qu-x #contentBelt ul.items > li > a:hover {
   background: var(--x-surface) !important;
+  color: var(--x-brand) !important;
   text-decoration: none !important;
 }
+html.qu-x[data-qux$='-dark'] #contentBelt ul.items > li > a:hover {
+  color: var(--x-brand-text) !important;
+}
+/* ACM's mint is a fill colour (1.6:1 on white); as hover text it takes the
+   design system's mid teal, one step darker, in both modes. */
+html.qu-x[data-qux^='acm-'] #contentBelt ul.items > li > a:hover {
+  color: #2fbbab !important;
+}
+html.qu-x #contentBelt ul.items > li > a:hover h3 {
+  transform: translateX(5px) !important;
+}
+html.qu-x.qu-ar #contentBelt ul.items > li > a:hover h3 {
+  transform: translateX(-5px) !important;
+}
 html.qu-x #contentBelt ul.items h3 {
-  font: 500 14px/1.3 var(--x-font-ui) !important;
-  color: var(--x-ink) !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  transition-property: color, transform !important;
+  font: 500 14px/1.35 var(--x-font-ui) !important;
+  color: inherit !important;
   margin: 0 !important;
   padding: 0 !important;
   background: none !important;
@@ -1559,10 +1655,10 @@ html.qu-x #contentBelt ul.items h3 .qu-en {
 html.qu-x #contentBelt ul.items h3 .qu-ar {
   display: block !important;
   font: 700 13px/1.7 var(--x-font-ar) !important;
-  color: var(--x-ink) !important;
+  color: inherit !important;
 }
 
-html.qu-x.qu-leaf #contentBelt[data-qu-belt-empty] {
+html.qu-x #contentBelt[data-qu-belt-empty] {
   display: none !important;
 }
 
@@ -1576,9 +1672,9 @@ html.qu-x #navigationcontrolSmall {
      bar instead of above it */
   position: static !important;
   inset: auto !important;
-  padding-block: 12px !important;
+  padding-block: 0 !important;
   background: none !important;
-  border-bottom: 1px solid var(--x-hairline) !important;
+  border: 0 !important;
   display: block !important;
   height: auto !important;
   width: auto !important;
@@ -1660,29 +1756,6 @@ html.qu-x .qu-identity-when {
   color: var(--x-muted) !important;
 }
 
-/* Leaf heading and identity block share a row. */
-html.qu-x.qu-menu .qu-titlerow {
-  box-sizing: border-box !important;
-  display: block !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 4px 32px 0 !important;
-}
-html.qu-x .qu-titlerow {
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: flex-end !important;
-  justify-content: space-between !important;
-  gap: 24px !important;
-  flex-wrap: wrap !important;
-  max-width: 1440px !important;
-  margin-inline: auto !important;
-  padding: 16px 32px 0 !important;
-}
-html.qu-x .qu-titlerow .qu-pagetitle {
-  display: block !important;
-  min-width: 0 !important;
-}
 html.qu-x .staticheaders .rightaligntext,
 html.qu-x .rightaligntext {
   font: 400 12px/1.6 var(--x-font-ui) !important;
@@ -1695,7 +1768,6 @@ html.qu-x .rightaligntext {
 /* --- Info / warning / error banners ----------------------------------- */
 
 html.qu-x .infotextdiv {
-  margin-block: 16px !important;
   padding: 0 !important;
   background: none !important;
   border: 0 !important;
@@ -1727,21 +1799,26 @@ html.qu-x td.indefault {
 html.qu-x td.indefault[data-qu-iconcell='1'] {
   display: none !important;
 }
+/* Messages keep their text in ordinary flow and hang the icon in a gutter
+   beside it. They used to be flex rows, which made every inline element in a
+   message — a <b>NOT</b>, a link — a column of its own, so a sentence broke
+   into three side-by-side pieces. */
+
 /* a message cell with no .infotext span still needs the icon */
 html.qu-x td.indefault[data-qu-iconcell='0']:not(:has(.infotext)):not(:has(.informationtext)) {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
+  position: relative !important;
+  padding-inline-start: 44px !important;
   font: 400 14px/1.6 var(--x-font-ui) !important;
   color: var(--x-info-text) !important;
 }
 html.qu-x
   td.indefault[data-qu-iconcell='0']:not(:has(.infotext)):not(:has(.informationtext))::before {
   content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 16px !important;
+  top: 16px !important;
   width: 18px !important;
   height: 18px !important;
-  flex: none !important;
-  margin-top: 1px !important;
   background: var(--x-info-text) !important;
   -webkit-mask: var(--qu-i-info) center / contain no-repeat !important;
   mask: var(--qu-i-info) center / contain no-repeat !important;
@@ -1751,9 +1828,9 @@ html.qu-x td.indefault img {
 }
 html.qu-x .infotext,
 html.qu-x .informationtext {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
+  display: block !important;
+  position: relative !important;
+  padding-inline-start: 28px !important;
   font: 400 14px/1.6 var(--x-font-ui) !important;
   color: var(--x-info-text) !important;
   background: none !important;
@@ -1761,10 +1838,11 @@ html.qu-x .informationtext {
 html.qu-x .infotext::before,
 html.qu-x .informationtext::before {
   content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 0 !important;
+  top: 2px !important;
   width: 18px !important;
   height: 18px !important;
-  flex: none !important;
-  margin-top: 1px !important;
   background: var(--x-info-text) !important;
   -webkit-mask: var(--qu-i-info) center / contain no-repeat !important;
   mask: var(--qu-i-info) center / contain no-repeat !important;
@@ -1772,11 +1850,10 @@ html.qu-x .informationtext::before {
 
 html.qu-x .errortext,
 html.qu-x .warningtext {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
-  padding: 14px 16px !important;
-  margin-block: 12px !important;
+  display: block !important;
+  position: relative !important;
+  padding-block: 14px !important;
+  padding-inline: 44px 16px !important;
   border-radius: var(--x-r-area) !important;
   font: 400 14px/1.6 var(--x-font-ui) !important;
   border: 1px solid var(--x-error-border) !important;
@@ -1788,18 +1865,21 @@ html.qu-x .warningtext {
   background: var(--x-warn-bg) !important;
   color: var(--x-warn-text) !important;
 }
-html.qu-x .errortext::before,
-html.qu-x .warningtext::before {
+/* the centred empty state reuses these classes with its own chip; the gutter
+   icon is for the banner form only */
+html.qu-x .errortext:not([data-qu-state])::before,
+html.qu-x .warningtext:not([data-qu-state])::before {
   content: '' !important;
+  position: absolute !important;
+  inset-inline-start: 16px !important;
+  top: 16px !important;
   width: 18px !important;
   height: 18px !important;
-  flex: none !important;
-  margin-top: 1px !important;
   background: currentColor !important;
   -webkit-mask: var(--qu-i-error) center / contain no-repeat !important;
   mask: var(--qu-i-error) center / contain no-repeat !important;
 }
-html.qu-x .warningtext::before {
+html.qu-x .warningtext:not([data-qu-state])::before {
   -webkit-mask-image: var(--qu-i-warn) !important;
   mask-image: var(--qu-i-warn) !important;
 }
@@ -1830,13 +1910,23 @@ html.qu-x td.pldefault {
   padding: 0 !important;
   margin: 0 !important;
 }
+/* A layout table in a stack still takes the stack's top gap (section 2).
+   No block may zero its own top margin: that one declaration outranks the
+   stack rule, and is how the transcript's first card came to sit flush under
+   its notice while the rail beside it kept its gap. */
+html.qu-x
+  :where(.pagebodydiv, .pagebodydiv form:not([data-qu-gateway]), td.pldefault, .qu-transcript-main)
+  > table.plaintable {
+  margin-block-start: var(--x-gap-block) !important;
+}
 html.qu-x.qu-leaf .pagebodydiv {
-  padding-block: 20px 48px !important;
+  padding-block: 0 !important;
   background: none !important;
   border: 0 !important;
 }
 html.qu-x .pagebodydiv form {
-  margin: 0 !important;
+  margin-inline: 0 !important;
+  margin-block-end: 0 !important;
   padding: 0 !important;
 }
 
@@ -1847,10 +1937,9 @@ html.qu-x table.dataentrytable {
   width: 100% !important;
   max-width: 640px !important;
   border: 1px solid var(--x-hairline) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   background: var(--x-surface) !important;
-  padding: 20px !important;
-  margin-block: 16px !important;
+  padding: var(--x-card-x) !important;
   box-sizing: border-box !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
@@ -1963,7 +2052,6 @@ html.qu-x input[type='button'] {
   width: auto !important;
   height: auto !important;
   box-shadow: none !important;
-  transition: background 0.15s var(--x-ease) !important;
 }
 html.qu-x button.htmlButton:hover,
 html.qu-x input[type='submit']:hover {
@@ -1999,10 +2087,9 @@ html.qu-x table.datadisplaytable,
 html.qu-x .pagebodydiv table[data-qu-bare] {
   width: 100% !important;
   border-collapse: collapse !important;
-  margin-block: 8px 28px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   overflow: hidden !important;
   font: 400 14px/1.5 var(--x-font-ui) !important;
 }
@@ -2013,7 +2100,7 @@ html.qu-x caption.captiontext {
   color: var(--x-ink) !important;
   font-style: normal !important;
   padding: 0 0 8px !important;
-  margin-block: 24px 0 !important;
+  margin-block: 0 !important;
   position: relative !important;
 }
 html.qu-x caption.captiontext::after {
@@ -2096,6 +2183,38 @@ html.qu-x td.ddseparator {
   border: 0 !important;
   font-size: 0 !important;
 }
+/* One card inset. The first and last cell of every row take the card's text
+   inset, so the caption, the column headers, the labels and the values all
+   start on one edge; cells between them keep the tighter gutter. Captions
+   and section heads use the same token. They used to differ by 6px — 20px for
+   the caption, 14px for the cells. The note banner, the stat tiles and the
+   transcript lay out their own cells. */
+html.qu-x table.datadisplaytable:not([data-qu-note], [data-qu-stats], [data-qu-transcript])
+  tr
+  > :is(th, td):first-child {
+  padding-inline-start: var(--x-card-x) !important;
+}
+html.qu-x table.datadisplaytable:not([data-qu-note], [data-qu-stats], [data-qu-transcript])
+  tr
+  > :is(th, td):last-child {
+  padding-inline-end: var(--x-card-x) !important;
+}
+/* The transcript's rows set their own cell padding at higher weight; its term
+   and totals rows sit in cards whose headers are inset by the same token.
+   Preamble rows are left out: their card pads itself. */
+html.qu-x.qu-transcript
+  table[data-qu-transcript]
+  tr[data-qu-term]:is([data-qu-row='header'], [data-qu-row='data'], [data-qu-row='totals'], [data-qu-row='totals-header'])
+  > :first-child {
+  padding-inline-start: var(--x-card-x) !important;
+}
+html.qu-x.qu-transcript
+  table[data-qu-transcript]
+  tr[data-qu-term]:is([data-qu-row='header'], [data-qu-row='data'], [data-qu-row='totals'], [data-qu-row='totals-header'])
+  > :last-child {
+  padding-inline-end: var(--x-card-x) !important;
+}
+
 /* Numeric columns read better tabular and end-aligned. */
 html.qu-x td.dddefault.qu-num,
 html.qu-x td.dddefault[align='right'] {
@@ -2119,6 +2238,13 @@ html.qu-x .tabon,
 html.qu-x .taboff {
   position: relative !important;
   display: inline-block !important;
+  /* Banner also uses td.bgtabon, width=100%, as its end-of-page rule; with
+     the tab padding on top it ran 8px past the frame. */
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  /* Banner's height=22 left no room for the label inside the padding, so the
+     underline, drawn at the cell's foot, ran through the text. */
+  height: auto !important;
   padding: 10px 4px 13px !important;
   margin-inline-end: 24px !important;
   background: none !important;
@@ -2154,6 +2280,14 @@ html.qu-x .tabon::after {
   border-radius: 1.5px !important;
   background: var(--x-brand-text) !important;
 }
+/* Banner draws each tab as a label cell plus a corner cell holding only a
+   sprite image, and pads the strip with full-width spacer cells of the same
+   classes. Styled as tabs, a corner drew a stray 3px dash beside the active
+   tab and a spacer a full-width bar under the strip and at the page end.
+   A tab cell with only a decorative image and no link is not a tab. */
+html.qu-x :is(td.bgtabon, td.bgtaboff):has(> img.headerImg):not(:has(a)) {
+  display: none !important;
+}
 /* the tab images the legacy sheet uses for the rounded corners */
 html.qu-x td.bgtabon img,
 html.qu-x td.bgtaboff img,
@@ -2169,7 +2303,7 @@ html.qu-x a.sitemaplevel2,
 html.qu-x a.sitemaplevel3 {
   display: block !important;
   text-decoration: none !important;
-  border-radius: 6px !important;
+  border-radius: var(--x-r-card) !important;
 }
 html.qu-x a.sitemaplevel1 {
   font: 600 17px/1.4 var(--x-font-ui) !important;
@@ -2215,23 +2349,38 @@ html.qu-x a.sitemaplevel3:hover {
    exactly — 9 columns for a course row, 7 for a totals row, 2 for key/value.
    ========================================================================== */
 
+/* Rail beside one column of cards, as the design draws it: 224px, a 20px gap.
+   Whatever Banner sends above the transcript — the notice, its jump links —
+   spans both columns, so the notice meets both frame edges and the rail and
+   the cards start level beneath it. */
 html.qu-x.qu-transcript .pagebodydiv.qu-has-rail {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 32px !important;
+  display: grid !important;
+  grid-template-columns: 224px minmax(0, 1fr) !important;
+  column-gap: var(--x-s-5) !important;
+  align-items: start !important;
+}
+html.qu-x.qu-transcript .pagebodydiv.qu-has-rail > :not(.qu-rail, .qu-transcript-main) {
+  grid-column: 1 / -1 !important;
+}
+/* The rail takes the block gap itself; the column's first card brings its own
+   from the stack rule, so both start level under the notice. */
+html.qu-x .qu-rail {
+  grid-column: 1 !important;
+  margin-block: var(--x-gap-block) 0 !important;
 }
 html.qu-x .qu-transcript-main {
-  flex: 1 1 auto !important;
+  grid-column: 2 !important;
   min-width: 0 !important;
+  margin-block: 0 !important;
 }
-html.qu-x [data-qu-anchor-dupe] {
+html.qu-x [data-qu-anchor-dupe],
+html.qu-x [data-qu-spacer] {
   display: none !important;
 }
 
 /* --- the rail ---------------------------------------------------------- */
 
 html.qu-x .qu-rail {
-  flex: 0 0 240px !important;
   position: sticky !important;
   top: 16px !important;
   display: flex !important;
@@ -2250,7 +2399,7 @@ html.qu-x .qu-rail-title {
 html.qu-x .qu-rail-link {
   display: block !important;
   padding: 7px 12px !important;
-  border-radius: 6px !important;
+  border-radius: var(--x-r-card) !important;
   font: 500 12.5px/1.3 var(--x-font-ui) !important;
   color: var(--x-body) !important;
   text-decoration: none !important;
@@ -2290,11 +2439,6 @@ html.qu-x .qu-print::before {
 html.qu-x .qu-print:hover {
   background: var(--x-brand-hover) !important;
 }
-html.qu-x .qu-rail-note {
-  font: 400 11.5px/1.6 var(--x-font-ui) !important;
-  color: var(--x-muted) !important;
-  padding: 12px 4px 0 !important;
-}
 
 /* --- out of table layout, into grid rows -------------------------------- */
 
@@ -2306,7 +2450,13 @@ html.qu-x.qu-transcript table[data-qu-transcript] > tbody {
   background: none !important;
   border-radius: 0 !important;
   overflow: visible !important;
-  margin: 0 !important;
+  margin-inline: 0 !important;
+  margin-block-end: 0 !important;
+}
+/* The table is a block in the column's stack and keeps its top gap from it;
+   only its tbodies (the cards) are zeroed here, and space themselves below. */
+html.qu-x.qu-transcript table[data-qu-transcript] > tbody {
+  margin-block-start: 0 !important;
 }
 html.qu-x.qu-transcript table[data-qu-transcript] tr {
   display: block !important;
@@ -2370,8 +2520,11 @@ html.qu-x.qu-transcript tr[data-qu-row='section'] > th.ddtitle::before {
   background: var(--x-brand-text) !important;
   transform: rotate(45deg) !important;
 }
-/* the server's "-Top-" back-link is kept, just quietened */
-html.qu-x.qu-transcript th.ddtitle a {
+/* A link inside a section heading that the rail does not replace is kept,
+   just quietened. The rail's duplicates — the "-Top-" back-links among them —
+   are excluded here: this selector outranks [data-qu-anchor-dupe], so without
+   the :not() it painted them back in. */
+html.qu-x.qu-transcript th.ddtitle a:not([data-qu-anchor-dupe]) {
   display: inline !important;
   font: 400 12px/1.4 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
@@ -2602,12 +2755,11 @@ html.qu-x tr[data-qu-row='spacer'] {
    draws it centred with a 56px chip. Two pseudo-elements, because one cannot
    be both a filled circle and a masked glyph: ::before is the chip, ::after
    is the icon laid over it. */
+/* Block, not a flex column: a flex column would put every inline element of
+   the message — a bold word, a link — on a line of its own. */
 html.qu-x [data-qu-state='empty'] {
   position: relative !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 16px !important;
+  display: block !important;
   max-width: 340px !important;
   margin: 56px auto !important;
   padding: 0 !important;
@@ -2619,10 +2771,11 @@ html.qu-x [data-qu-state='empty'] {
 }
 html.qu-x [data-qu-state='empty']::before {
   content: '' !important;
+  display: block !important;
+  box-sizing: border-box !important;
   width: 56px !important;
   height: 56px !important;
-  margin: 0 !important;
-  flex: none !important;
+  margin: 0 auto 16px !important;
   border-radius: 50% !important;
   background: var(--x-warn-bg) !important;
   border: 1px solid var(--x-warn-border) !important;
@@ -2633,6 +2786,8 @@ html.qu-x [data-qu-state='empty']::after {
   content: '' !important;
   position: absolute !important;
   top: 15px !important;
+  inset-inline: 0 !important;
+  margin-inline: auto !important;
   width: 26px !important;
   height: 26px !important;
   background: var(--x-warn-text) !important;
@@ -2692,27 +2847,40 @@ html.qu-x .qu-attrib-mark {
   color: var(--x-ink) !important;
   white-space: nowrap !important;
 }
+/* The footer carries the extension's release (buildFooter) in place of
+   Banner's, which is hidden rather than reworded. */
 html.qu-x .reltext {
-  display: inline !important;
-  text-transform: none !important;
+  display: none !important;
+}
+html.qu-x .qu-release {
   font: 400 12px/1 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
+  white-space: nowrap !important;
 }
 html.qu-x .sitemaplink {
   display: inline !important;
 }
+/* The footer is a full-bleed band (section 2): its hairline runs edge to
+   edge and its content meets the frame like every other region's. */
 html.qu-x #pagefooter,
 html.qu-x #globalFooter,
 html.qu-x .disclaimer {
-  max-width: 1440px !important;
-  margin: 0 auto !important;
-  padding: 20px 24px !important;
+  margin-block: 0 !important;
+  padding-block: var(--x-s-4) !important;
   box-sizing: border-box !important;
   font: 400 12px/1.6 var(--x-font-ui) !important;
   color: var(--x-muted) !important;
   background: none !important;
   border-top: 1px solid var(--x-hairline) !important;
   text-align: start !important;
+}
+html.qu-x #pagefooter {
+  margin-block: var(--x-gap-end) 0 !important;
+}
+/* Banner ships #globalFooter empty on every page; styled, it drew a second
+   divider under the real footer. */
+html.qu-x #globalFooter:empty {
+  display: none !important;
 }
 html.qu-x .disclaimer h5 {
   font: 400 12px/1.6 var(--x-font-ui) !important;
@@ -2736,9 +2904,7 @@ html.qu-x .lastaccess {
    inside a display:none .pagebodydiv, so the page is blank on QU's own site;
    enhance.js lifts them into #pagebody as cards. */
 html.qu-x .qu-public-heading {
-  max-width: 1440px !important;
-  margin: 28px auto 0 !important;
-  padding: 0 32px !important;
+  margin-block: var(--x-gap-content) 0 !important;
   box-sizing: border-box !important;
   text-align: center !important;
   font: var(--x-w-h1) 28px/1.25 var(--x-font-display) !important;
@@ -2748,10 +2914,8 @@ html.qu-x .qu-public-heading {
 html.qu-x .qu-public {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 16px !important;
-  max-width: 1440px !important;
-  margin: 24px auto 48px !important;
-  padding: 0 32px !important;
+  gap: var(--x-gap-grid) !important;
+  margin-block: var(--x-s-6) 0 !important;
   box-sizing: border-box !important;
 }
 html.qu-x .qu-public-card {
@@ -2852,7 +3016,7 @@ html.qu-x.qu-anon.qu-leaf .pagebodydiv > form {
   padding: 28px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
-  border-radius: var(--x-r-area) !important;
+  border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-pop) !important;
   box-sizing: border-box !important;
 }
@@ -2933,10 +3097,11 @@ html.qu-x .qu-notice-action:hover {
   color: var(--x-on-brand) !important;
   text-decoration: none !important;
 }
-/* The ORDS 500 page is an Oracle JET document with none of the Banner chrome. */
+/* The ORDS 500 page is an Oracle JET document with none of the Banner chrome.
+   It keeps the frame's side inset, so the notice never touches the edges. */
 html.qu-x.qu-ords body {
   background: var(--x-page) !important;
-  padding: 0 !important;
+  padding-block: 0 !important;
 }
 
 /* ==========================================================================
@@ -3011,7 +3176,6 @@ html.qu-x.qu-ar td.dddefault,
 html.qu-x.qu-ar th.ddlabel {
   unicode-bidi: plaintext !important;
 }
-html.qu-x.qu-ar .staticheaders,
 html.qu-x.qu-ar #welcomemessage,
 html.qu-x.qu-ar .qu-notice h2 {
   font-family: var(--x-font-ar) !important;
@@ -3031,44 +3195,47 @@ html.qu-x.qu-ar td.dddefault {
    13. RESPONSIVE — the site is unusable below ~1100px today
    ========================================================================== */
 
+/* Side gutters need no breakpoints here: --x-gutter tracks the viewport
+   (32 at 1440, 20 at 900, 16 at 480) and every region takes it from body. */
 @media (max-width: 1100px) {
   html.qu-x #header {
     flex-wrap: wrap !important;
     height: auto !important;
-    min-height: 64px !important;
-    padding: 10px 16px !important;
+    min-height: 84px !important;
+    padding-block: 10px !important;
   }
   html.qu-x #search {
     order: 3 !important;
     width: 100% !important;
   }
-  html.qu-x #pageheader,
-  html.qu-x #pagebody,
-  html.qu-x #contentBelt,
-  html.qu-x .staticheaders,
-  html.qu-x #crumb,
-  html.qu-x .pagebodydiv,
-  html.qu-x #navigationcontrolSmall,
-  html.qu-x #navigationcontrol,
-  html.qu-x #welcomemessage,
-  html.qu-x .qu-public {
-    padding-inline: 16px !important;
-  }
 }
 
 @media (max-width: 900px) {
-  html.qu-x #welcomemessage,
-  html.qu-x .staticheaders {
+  html.qu-x #welcomemessage {
     font-size: 22px !important;
   }
-  html.qu-x #contentBelt,
-  html.qu-x #contentBelt.menucontent {
-    grid-template-columns: 1fr !important;
+  /* The identity block leaves the crumb's line for its own, start-aligned. */
+  html.qu-x .qu-headrow > .staticheaders {
+    order: 2 !important;
+    flex-basis: 100% !important;
+    text-align: start !important;
+  }
+  /* One column. These must match the specificity of the three-column rules
+     in section 6 (html.qu-x.qu-menu …, html.qu-x.qu-home …) to override
+     them; the plain html.qu-x #contentBelt never did, so narrow screens kept
+     three squeezed columns. Not two: Cascade breaks rows every three cards
+     for its level-3 panels, and two columns would leave a hole beside each. */
+  html.qu-x.qu-menu #contentBelt,
+  html.qu-x.qu-menu #contentBelt.menucontent,
+  html.qu-x.qu-home #menuTrackInst {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
   html.qu-x #navigationcontrol .menucontainer {
     overflow-x: auto !important;
   }
-  html.qu-x .breadCrumb {
+  /* A wrapped crumb in a pill frame becomes a rounded blob; drop the frame. */
+  html.qu-x .breadCrumb,
+  html.qu-x .crumbs {
     border: 0 !important;
     background: none !important;
     box-shadow: none !important;
@@ -3082,9 +3249,49 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x .rightaligntext {
     text-align: start !important;
   }
+  /* The transcript goes to one column; the rail becomes a wrapping row of
+     jump links above the cards instead of a 224px column beside them. */
+  html.qu-x.qu-transcript .pagebodydiv.qu-has-rail {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html.qu-x .qu-rail,
+  html.qu-x .qu-transcript-main {
+    grid-column: 1 !important;
+  }
+  html.qu-x .qu-rail {
+    position: static !important;
+    max-height: none !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: var(--x-s-1) !important;
+  }
+  html.qu-x .qu-rail-title {
+    flex-basis: 100% !important;
+    padding-inline: 0 !important;
+  }
+  html.qu-x .qu-rail-link[data-qu-level='2'] {
+    padding-inline-start: 12px !important;
+  }
+  html.qu-x .qu-print {
+    margin-top: 0 !important;
+  }
 }
 
 @media (max-width: 640px) {
+  html.qu-x {
+    --x-card-x: var(--x-s-4);
+  }
+  /* No module bar on a phone: the crumb and Home lead back to every module.
+     Home keeps #navigationcontrol, where the modules are the content. */
+  html.qu-x.qu-menu:not(.qu-home) #navigationcontrol,
+  html.qu-x #navigationcontrolSmall {
+    display: none !important;
+  }
+  html.qu-x:has(#navigationcontrolSmall) .qu-headrow,
+  html.qu-x #navigationcontrol + .qu-headrow {
+    margin-block: var(--x-gap-top) 0 !important;
+  }
   /* Key/value tables become stacked pairs; grids scroll inside their frame. */
   html.qu-x table.datadisplaytable[data-qu-table='kv'],
   html.qu-x table.datadisplaytable[data-qu-table='kv'] tbody,
@@ -3096,7 +3303,7 @@ html.qu-x.qu-ar td.dddefault {
     display: block !important;
     width: auto !important;
     border-bottom: 0 !important;
-    padding: 2px 14px !important;
+    padding: 2px var(--x-card-x) !important;
   }
   html.qu-x table.datadisplaytable[data-qu-table='kv'] th.ddlabel {
     padding-top: 12px !important;
@@ -3105,11 +3312,30 @@ html.qu-x.qu-ar td.dddefault {
     border-bottom: 1px solid var(--x-hairline) !important;
     padding-bottom: 10px !important;
   }
-  html.qu-x table.datadisplaytable[data-qu-table='grid'] {
+  /* A table wider than a phone scrolls inside its own card. The page never
+     scrolls sideways — body clips overflow — so anything past the frame was
+     cut off and unreachable. Key/value tables stack instead (above); the
+     stat tiles and note banner lay out their own cells. */
+  html.qu-x table.datadisplaytable:not([data-qu-table='kv'], [data-qu-stats], [data-qu-note], [data-qu-transcript]),
+  html.qu-x .pagebodydiv table[data-qu-bare] {
     display: block !important;
     overflow-x: auto !important;
+    max-width: 100% !important;
   }
-  html.qu-x .qu-switch .qu-seg:first-child { display: none !important; }
+  /* The transcript's rows are grids with content-sized tracks; its table
+     scrolls as one. */
+  html.qu-x.qu-transcript table[data-qu-transcript] {
+    overflow-x: auto !important;
+  }
+  /* The transcript's two-up preamble cards stack their pairs on a phone. */
+  html.qu-x.qu-transcript table[data-qu-transcript] tbody[data-qu-card] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  /* The level-3 panel spans the one-column grid; two option columns inside
+     it would halve an already narrow width. */
+  html.qu-x #contentBelt ul.items {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
 }
 
 /* ==========================================================================
@@ -3125,17 +3351,44 @@ html.qu-x.qu-ar td.dddefault {
   html.qu-x #search,
   html.qu-x #navigationcontrol,
   html.qu-x #navigationcontrolSmall,
-  html.qu-x #crumb,
-  html.qu-x .qu-switch,
   html.qu-x #pagefooter,
   html.qu-x #globalFooter,
   html.qu-x .findPageOverlay {
     display: none !important;
   }
+  /* On paper the crumb's current item is the page's only heading — there is
+     no separate title row — so print it alone, as a heading. */
+  html.qu-x .breadCrumb a:not(.selected),
+  html.qu-x .breadcrumbSeperator,
+  html.qu-x .crumbs a,
+  html.qu-x .crumbs .divider {
+    display: none !important;
+  }
+  html.qu-x .breadCrumb,
+  html.qu-x .crumbs {
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  html.qu-x .breadCrumb a.selected,
+  html.qu-x .crumbs .lastValue {
+    padding: 0 !important;
+    background: none !important;
+    font: 700 20px/1.3 var(--x-font-display) !important;
+    color: #000 !important;
+  }
+  html.qu-x .breadCrumb a.selected::before {
+    content: none !important;
+  }
   html.qu-x,
   html.qu-x body {
     background: #fff !important;
     color: #000 !important;
+  }
+  /* Paper brings its own margins; the screen frame would add to them. */
+  html.qu-x body {
+    padding-inline: 0 !important;
   }
   html.qu-x table.datadisplaytable {
     border: 1px solid #999 !important;
@@ -3159,6 +3412,10 @@ html.qu-x.qu-ar td.dddefault {
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+  html.qu-x {
+    --x-dur-hover: 0.01ms;
+    --x-dur-reveal: 0.01ms;
+  }
   html.qu-x *,
   html.qu-x *::before,
   html.qu-x *::after {
@@ -3293,7 +3550,6 @@ html.qu-x .qu-section-head {
   justify-content: space-between !important;
   gap: 16px !important;
   flex-wrap: wrap !important;
-  margin: 24px 0 0 !important;
 }
 /* with a pill present the underline belongs to the label, not the caption */
 
@@ -3332,7 +3588,7 @@ html.qu-x table.datadisplaytable[data-qu-stats] tr {
   display: flex !important;
   flex-direction: column !important;
   gap: 6px !important;
-  padding: 14px 20px !important;
+  padding: 14px var(--x-card-x) !important;
   border-inline-end: 1px solid var(--x-hairline) !important;
 }
 html.qu-x table.datadisplaytable[data-qu-stats] tr:last-child {
@@ -3421,19 +3677,17 @@ html.qu-x form[data-qu-gateway] {
   box-sizing: border-box !important;
   width: 100% !important;
   max-width: 560px !important;
-  margin: 20px 0 0 !important;
+  margin-block: var(--x-gap-block) 0 !important;
   padding: 28px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
   border-radius: var(--x-r-card) !important;
   box-shadow: var(--x-shadow-card) !important;
 }
-/* Outranks the #pagebody full-column rule, which insets the banner 32px.
-   Some gateways already ship the notice inside the form, so match both. */
-html.qu-x #pagebody form[data-qu-gateway] .infotextdiv {
-  max-width: none !important;
+/* Inside the card the notice is the card's first row. Some gateways already
+   ship the notice inside the form, so match both. */
+html.qu-x form[data-qu-gateway] .infotextdiv {
   margin: 0 0 20px !important;
-  padding-inline: 0 !important;
 }
 html.qu-x form[data-qu-gateway] table.dataentrytable {
   max-width: none !important;
@@ -3465,38 +3719,37 @@ html.qu-x form[data-qu-gateway='edit'] {
    whichever path it took. */
 html.qu-x table.datadisplaytable > caption.captiontext:not([data-qu-caption-empty]) {
   box-sizing: border-box !important;
-  margin-block: 24px 0 !important;
-  padding: 18px 20px 14px !important;
+  margin-block: 0 !important;
+  padding: 18px var(--x-card-x) 14px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
   border-bottom: 0 !important;
 }
 html.qu-x table.datadisplaytable:has(> caption.captiontext:not([data-qu-caption-empty])) {
-  margin-block: 0 28px !important;
   border-top: 0 !important;
 }
 /* Stat tables already place the head inside; keep them off this path. */
 html.qu-x table.datadisplaytable[data-qu-stats] > caption.captiontext {
   border: 0 !important;
   background: none !important;
-  padding: 18px 20px 0 !important;
+  padding: 18px var(--x-card-x) 0 !important;
   margin-block: 0 !important;
 }
 html.qu-x table.datadisplaytable[data-qu-stats] {
   border-top: 1px solid var(--x-hairline) !important;
-  margin-block: 24px 28px !important;
 }
 /* The balance-pill head is that same card header, built as a div rather than
    a caption so the pill can sit on its row. */
 html.qu-x .qu-section-head {
   box-sizing: border-box !important;
-  padding: 18px 20px 14px !important;
+  padding: 18px var(--x-card-x) 14px !important;
   background: var(--x-surface) !important;
   border: 1px solid var(--x-hairline) !important;
   border-bottom: 0 !important;
 }
+/* the table under a section head is the same card: no gap between them */
 html.qu-x .qu-section-head + table.datadisplaytable {
-  margin-block: 0 28px !important;
+  margin-block: 0 !important;
   border-top: 0 !important;
 }
 
@@ -3613,6 +3866,5 @@ html.qu-x #row2[data-qu-belt-empty] {
   }
   html.qu-x .qu-public-heading {
     font-size: 22px !important;
-    padding-inline: 16px !important;
   }
 }
