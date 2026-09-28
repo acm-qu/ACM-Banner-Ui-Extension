@@ -231,7 +231,8 @@ Two component rules follow from real bugs:
   `--x-r-field` for inputs, `--x-r-pill` for crumb chips and badges,
   `--x-r-card` for cards, panels and list options, `--x-r-area` for banners,
   notices and overlays; icon chips are circles. The QU scope squares everything,
-  pseudo-elements included.
+  pseudo-elements included, except pills and icon chips: those are named in the
+  exception after §1b's squaring rule, so a new pill or chip joins that list.
 - **Messages are never flex rows.** Their text flows as ordinary inline content
   and the icon hangs in a padded gutter. As a flex row, every inline element in
   a message (a `<b>`, a link) became a column of its own.

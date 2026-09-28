@@ -228,7 +228,7 @@ html.qu-x[data-qux='qu-light'] {
   --x-w-h1: 700; --x-w-h2: 600; --x-w-h3: 500;
 
   --x-r-ctl: 0px; --x-r-card: 0px; --x-r-field: 0px;
-  --x-r-area: 0px; --x-r-pill: 0px;
+  --x-r-area: 0px; --x-r-pill: 999px;
 
   --x-shadow-card: 0 1px 1px rgba(24, 12, 17, 0.02);
   --x-shadow-pop: 0 2px 6px rgba(24, 12, 17, 0.035);
@@ -401,12 +401,28 @@ html.qu-x {
 }
 
 /* The QU theme is sharp-cornered everywhere, including shapes that carry a
-   hardcoded radius and shapes drawn by pseudo-elements (icon chips, empty
-   states). The ACM theme keeps its pill-and-square language. */
+   hardcoded radius and shapes drawn by pseudo-elements. The ACM theme keeps
+   its pill-and-square language. */
 html.qu-x[data-qux^='qu-'] body *,
 html.qu-x[data-qux^='qu-'] body *::before,
 html.qu-x[data-qux^='qu-'] body *::after {
   border-radius: 0 !important;
+}
+/* ...except pills and icon chips, which stay round in both themes. The rule
+   above outranks each of their own rules, so they are named again here. */
+html.qu-x[data-qux^='qu-'] body .breadCrumb,
+html.qu-x[data-qux^='qu-'] body .breadCrumb a,
+html.qu-x[data-qux^='qu-'] body .crumbs,
+html.qu-x[data-qux^='qu-'] body .crumbs a,
+html.qu-x[data-qux^='qu-'] body .crumbs .lastValue,
+html.qu-x[data-qux^='qu-'] body .menuSmall,
+html.qu-x[data-qux^='qu-'] body .qu-host-badge,
+html.qu-x[data-qux^='qu-'] body .qu-badge,
+html.qu-x[data-qux^='qu-'] body .qu-balance,
+html.qu-x[data-qux^='qu-'] body .htmlButtonLevel2-3::before,
+html.qu-x[data-qux^='qu-'] body [data-qu-state='empty']::before,
+html.qu-x[data-qux^='qu-'] body .qu-public-chip {
+  border-radius: var(--x-r-pill) !important;
 }
 
 /* ==========================================================================
