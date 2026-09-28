@@ -875,8 +875,11 @@ html.qu-x .closeicon {
 /* --- Results overlay -------------------------------------------------- */
 
 html.qu-x .findPageOverlay {
-  /* slides down from nothing when it appears: see @starting-style below */
-  transition-property: height, padding-block !important;
+  /* slides down from nothing when it appears (see @starting-style below) and
+     back up when Cascade hides it: allow-discrete holds its inline
+     display:none until the slide is done */
+  transition-property: height, padding-block, display !important;
+  transition-behavior: allow-discrete !important;
   transition-duration: var(--x-dur-reveal) !important;
   height: auto !important;
   position: absolute !important;
@@ -898,6 +901,15 @@ html.qu-x .findPageOverlay {
     height: 0 !important;
     padding-block: 0 !important;
   }
+}
+/* Hidden: the same zero height it slid down from. The results clip rather
+   than scroll as it shrinks, and a closing overlay takes no clicks. */
+html.qu-x .findPageOverlay[style*='display: none'],
+html.qu-x .findPageOverlay[style*='display:none'] {
+  height: 0 !important;
+  padding-block: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 html.qu-x .findPageOverlay hr {
   display: none !important;
@@ -1548,25 +1560,31 @@ html.qu-x[data-qux^='acm-'] .htmlButtonLevel2-3.selected {
 
 /* --- Level-3 panel ---------------------------------------------------- */
 
+/* Closed is the mirror of @starting-style below, and it carries the
+   transition too: a close reads its transition from the closed state, and
+   allow-discrete holds display at block until the panel has slid back up.
+   The border and the side padding stay put so only the height moves. */
 html.qu-x #contentBelt > [id='level3Container'] {
   grid-column: 1 / -1 !important;
   display: none !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 0 8px !important;
   background: none !important;
-  border: 0 !important;
+  border: 1px solid transparent !important;
   width: auto !important;
-  height: auto !important;
+  height: 0 !important;
+  overflow: hidden !important;
   float: none !important;
+  transition-property: height, padding-block, background-color, border-color, display !important;
+  transition-behavior: allow-discrete !important;
+  transition-duration: var(--x-dur-reveal) !important;
 }
 html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
   display: block !important;
   /* slides down from nothing when it opens: see @starting-style below */
-  overflow: hidden !important;
-  transition-property: height, padding-block, background-color, border-color !important;
-  transition-duration: var(--x-dur-reveal) !important;
+  height: auto !important;
   background: var(--x-brand-tint) !important;
-  border: 1px solid var(--x-brand-tint-border) !important;
+  border-color: var(--x-brand-tint-border) !important;
   border-radius: var(--x-r-card) !important;
   padding: 8px !important;
 }

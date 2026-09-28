@@ -245,8 +245,11 @@ take `--x-dur-hover` (0.5s) and panels that open take `--x-dur-reveal` (0.7s). A
 universal rule eases colours, borders and shadows on every element — never
 opacity, transforms or sizes, which Cascade animates with jQuery. The level-3
 panel and the search results slide down from `height: 0` via `@starting-style`
-(with `interpolate-size: allow-keywords`). The popup's Animations switch and the
-OS reduced-motion setting both zero the duration tokens.
+(with `interpolate-size: allow-keywords`), and slide back up when they close:
+the closed state is the mirror of the starting style and carries the
+transition itself, with `display` in it under `transition-behavior:
+allow-discrete`. Every enter animation gets its exit. The popup's Animations
+switch and the OS reduced-motion setting both zero the duration tokens.
 
 Section map — find where a rule belongs before adding one:
 
