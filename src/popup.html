@@ -119,10 +119,16 @@
         --x-focus: #3ae4d1;
       }
 
-      /* QU is sharp-cornered everywhere, switches and swatches included, as
-         it is on the page. ACM keeps its pill-and-square language. */
+      /* QU is sharp-cornered everywhere, switches included, as it is on the
+         page; pills and round chips stay round, as they do there. ACM keeps
+         its pill-and-square language. */
       :root[data-qux^='qu-'] body * {
         border-radius: 0 !important;
+      }
+      :root[data-qux^='qu-'] body .status,
+      :root[data-qux^='qu-'] body .status-dot,
+      :root[data-qux^='qu-'] body .swatch {
+        border-radius: 999px !important;
       }
 
       *,
