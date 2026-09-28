@@ -410,6 +410,7 @@ html.qu-x[data-qux^='qu-'] body *::after {
 }
 /* ...except pills and icon chips, which stay round in both themes. The rule
    above outranks each of their own rules, so they are named again here. */
+html.qu-x[data-qux^='qu-']:not(.qu-home) body .menubaseButton .menu,
 html.qu-x[data-qux^='qu-'] body .breadCrumb,
 html.qu-x[data-qux^='qu-'] body .breadCrumb a,
 html.qu-x[data-qux^='qu-'] body .crumbs,
@@ -1251,7 +1252,7 @@ html.qu-x:not(.qu-home) .menubaseButton .menu {
   background-image: none !important;
   background-color: transparent !important;
   border: 0 !important;
-  border-radius: var(--x-r-ctl) !important;
+  border-radius: var(--x-r-pill) !important;
   color: var(--x-ink) !important;
   width: auto !important;
 }
@@ -1272,6 +1273,9 @@ html.qu-x:not(.qu-home) .menubaseButton .menu div {
 }
 html.qu-x:not(.qu-home) .menubaseButton .menu div span {
   padding: 0 !important;
+  /* cascade.css holds every label to 120px, so a short one (One Stop) sat
+     at the start of a tab wider than itself */
+  min-width: 0 !important;
   height: auto !important;
   font: 600 14px/1.2 var(--x-font-ui) !important;
   color: inherit !important;

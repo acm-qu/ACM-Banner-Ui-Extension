@@ -228,7 +228,7 @@ Three rules keep every page — including ones nobody has looked at — aligned:
 Two component rules follow from real bugs:
 
 - **Radius by role, never hard-coded.** `--x-r-ctl` for tabs and buttons,
-  `--x-r-field` for inputs, `--x-r-pill` for crumb chips and badges,
+  `--x-r-field` for inputs, `--x-r-pill` for module tabs, crumb chips and badges,
   `--x-r-card` for cards, panels and list options, `--x-r-area` for banners,
   notices and overlays; icon chips are circles. The QU scope squares everything,
   pseudo-elements included, except pills and icon chips: those are named in the
