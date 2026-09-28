@@ -228,10 +228,11 @@ Three rules keep every page — including ones nobody has looked at — aligned:
 Two component rules follow from real bugs:
 
 - **Radius by role, never hard-coded.** `--x-r-ctl` for tabs and buttons,
-  `--x-r-field` for inputs, `--x-r-pill` for crumb chips and badges,
+  `--x-r-field` for inputs, `--x-r-pill` for module tabs, crumb chips and badges,
   `--x-r-card` for cards, panels and list options, `--x-r-area` for banners,
   notices and overlays; icon chips are circles. The QU scope squares everything,
-  pseudo-elements included.
+  pseudo-elements included, except pills and icon chips: those are named in the
+  exception after §1b's squaring rule, so a new pill or chip joins that list.
 - **Messages are never flex rows.** Their text flows as ordinary inline content
   and the icon hangs in a padded gutter. As a flex row, every inline element in
   a message (a `<b>`, a link) became a column of its own.
@@ -244,8 +245,11 @@ take `--x-dur-hover` (0.5s) and panels that open take `--x-dur-reveal` (0.7s). A
 universal rule eases colours, borders and shadows on every element — never
 opacity, transforms or sizes, which Cascade animates with jQuery. The level-3
 panel and the search results slide down from `height: 0` via `@starting-style`
-(with `interpolate-size: allow-keywords`). The popup's Animations switch and the
-OS reduced-motion setting both zero the duration tokens.
+(with `interpolate-size: allow-keywords`), and slide back up when they close:
+the closed state is the mirror of the starting style and carries the
+transition itself, with `display` in it under `transition-behavior:
+allow-discrete`. Every enter animation gets its exit. The popup's Animations
+switch and the OS reduced-motion setting both zero the duration tokens.
 
 Section map — find where a rule belongs before adding one:
 

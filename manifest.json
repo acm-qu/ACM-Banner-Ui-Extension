@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ACM Banner Redesign",
   "version": "1.1.0",
-  "description": "Restyles mybanner.qu.edu.qa in place. Two themes (QU maroon / ACM mint), light and dark, EN and AR. Same server, same pages, same data.",
+  "description": "Restyles mybanner.qu.edu.qa in place. Two themes (QU burgundy / ACM mint), light and dark, EN and AR. Same server, same pages, same data.",
   "permissions": ["storage"],
   "host_permissions": ["https://mybanner.qu.edu.qa/*"],
   "content_scripts": [

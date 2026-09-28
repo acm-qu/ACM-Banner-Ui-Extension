@@ -228,7 +228,7 @@ html.qu-x[data-qux='qu-light'] {
   --x-w-h1: 700; --x-w-h2: 600; --x-w-h3: 500;
 
   --x-r-ctl: 0px; --x-r-card: 0px; --x-r-field: 0px;
-  --x-r-area: 0px; --x-r-pill: 0px;
+  --x-r-area: 0px; --x-r-pill: 999px;
 
   --x-shadow-card: 0 1px 1px rgba(24, 12, 17, 0.02);
   --x-shadow-pop: 0 2px 6px rgba(24, 12, 17, 0.035);
@@ -401,12 +401,29 @@ html.qu-x {
 }
 
 /* The QU theme is sharp-cornered everywhere, including shapes that carry a
-   hardcoded radius and shapes drawn by pseudo-elements (icon chips, empty
-   states). The ACM theme keeps its pill-and-square language. */
+   hardcoded radius and shapes drawn by pseudo-elements. The ACM theme keeps
+   its pill-and-square language. */
 html.qu-x[data-qux^='qu-'] body *,
 html.qu-x[data-qux^='qu-'] body *::before,
 html.qu-x[data-qux^='qu-'] body *::after {
   border-radius: 0 !important;
+}
+/* ...except pills and icon chips, which stay round in both themes. The rule
+   above outranks each of their own rules, so they are named again here. */
+html.qu-x[data-qux^='qu-']:not(.qu-home) body .menubaseButton .menu,
+html.qu-x[data-qux^='qu-'] body .breadCrumb,
+html.qu-x[data-qux^='qu-'] body .breadCrumb a,
+html.qu-x[data-qux^='qu-'] body .crumbs,
+html.qu-x[data-qux^='qu-'] body .crumbs a,
+html.qu-x[data-qux^='qu-'] body .crumbs .lastValue,
+html.qu-x[data-qux^='qu-'] body .menuSmall,
+html.qu-x[data-qux^='qu-'] body .qu-host-badge,
+html.qu-x[data-qux^='qu-'] body .qu-badge,
+html.qu-x[data-qux^='qu-'] body .qu-balance,
+html.qu-x[data-qux^='qu-'] body .htmlButtonLevel2-3::before,
+html.qu-x[data-qux^='qu-'] body [data-qu-state='empty']::before,
+html.qu-x[data-qux^='qu-'] body .qu-public-chip {
+  border-radius: var(--x-r-pill) !important;
 }
 
 /* ==========================================================================
@@ -858,8 +875,11 @@ html.qu-x .closeicon {
 /* --- Results overlay -------------------------------------------------- */
 
 html.qu-x .findPageOverlay {
-  /* slides down from nothing when it appears: see @starting-style below */
-  transition-property: height, padding-block !important;
+  /* slides down from nothing when it appears (see @starting-style below) and
+     back up when Cascade hides it: allow-discrete holds its inline
+     display:none until the slide is done */
+  transition-property: height, padding-block, display !important;
+  transition-behavior: allow-discrete !important;
   transition-duration: var(--x-dur-reveal) !important;
   height: auto !important;
   position: absolute !important;
@@ -881,6 +901,15 @@ html.qu-x .findPageOverlay {
     height: 0 !important;
     padding-block: 0 !important;
   }
+}
+/* Hidden: the same zero height it slid down from. The results clip rather
+   than scroll as it shrinks, and a closing overlay takes no clicks. */
+html.qu-x .findPageOverlay[style*='display: none'],
+html.qu-x .findPageOverlay[style*='display:none'] {
+  height: 0 !important;
+  padding-block: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 html.qu-x .findPageOverlay hr {
   display: none !important;
@@ -1235,7 +1264,7 @@ html.qu-x:not(.qu-home) .menubaseButton .menu {
   background-image: none !important;
   background-color: transparent !important;
   border: 0 !important;
-  border-radius: var(--x-r-ctl) !important;
+  border-radius: var(--x-r-pill) !important;
   color: var(--x-ink) !important;
   width: auto !important;
 }
@@ -1256,6 +1285,9 @@ html.qu-x:not(.qu-home) .menubaseButton .menu div {
 }
 html.qu-x:not(.qu-home) .menubaseButton .menu div span {
   padding: 0 !important;
+  /* cascade.css holds every label to 120px, so a short one (One Stop) sat
+     at the start of a tab wider than itself */
+  min-width: 0 !important;
   height: auto !important;
   font: 600 14px/1.2 var(--x-font-ui) !important;
   color: inherit !important;
@@ -1528,25 +1560,31 @@ html.qu-x[data-qux^='acm-'] .htmlButtonLevel2-3.selected {
 
 /* --- Level-3 panel ---------------------------------------------------- */
 
+/* Closed is the mirror of @starting-style below, and it carries the
+   transition too: a close reads its transition from the closed state, and
+   allow-discrete holds display at block until the panel has slid back up.
+   The border and the side padding stay put so only the height moves. */
 html.qu-x #contentBelt > [id='level3Container'] {
   grid-column: 1 / -1 !important;
   display: none !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 0 8px !important;
   background: none !important;
-  border: 0 !important;
+  border: 1px solid transparent !important;
   width: auto !important;
-  height: auto !important;
+  height: 0 !important;
+  overflow: hidden !important;
   float: none !important;
+  transition-property: height, padding-block, background-color, border-color, display !important;
+  transition-behavior: allow-discrete !important;
+  transition-duration: var(--x-dur-reveal) !important;
 }
 html.qu-x #contentBelt > [id='level3Container'].qu-panel-open {
   display: block !important;
   /* slides down from nothing when it opens: see @starting-style below */
-  overflow: hidden !important;
-  transition-property: height, padding-block, background-color, border-color !important;
-  transition-duration: var(--x-dur-reveal) !important;
+  height: auto !important;
   background: var(--x-brand-tint) !important;
-  border: 1px solid var(--x-brand-tint-border) !important;
+  border-color: var(--x-brand-tint-border) !important;
   border-radius: var(--x-r-card) !important;
   padding: 8px !important;
 }
@@ -1591,7 +1629,13 @@ html.qu-x #contentBelt ul.items > li > a {
   width: auto !important;
   height: 100% !important;
   box-sizing: border-box !important;
-  padding: 12px 16px !important;
+  /* cascade.css draws a 1px #999 border on hover and pulls the option back
+     with margin: -1px. The border is kept, transparent at rest, so the hover
+     only changes its colour and nothing moves; the padding gives that 1px
+     back. */
+  margin: 0 !important;
+  padding: 11px 15px !important;
+  border: 1px solid transparent !important;
   min-height: 44px !important;
   color: var(--x-ink) !important;
   border-radius: var(--x-r-card) !important;
@@ -1616,12 +1660,14 @@ html.qu-x #contentBelt ul.items > li > a::after {
 html.qu-x.qu-ar #contentBelt ul.items > li > a::after {
   transform: scaleX(-1) !important;
 }
-/* Hover: the option's text takes the primary colour and its label slides
-   5px toward the reading end. Dark scopes use the primary's lifted text tone,
-   since plain maroon on near-black would not read. */
+/* Hover: the option's text and border take the primary colour and its label
+   slides 5px toward the reading end. Dark scopes use the primary's lifted
+   text tone, since plain burgundy on near-black would not read. The border
+   follows the text colour, so every scope's override below turns it too. */
 html.qu-x #contentBelt ul.items > li > a:hover {
   background: var(--x-surface) !important;
   color: var(--x-brand) !important;
+  border-color: currentColor !important;
   text-decoration: none !important;
 }
 html.qu-x[data-qux$='-dark'] #contentBelt ul.items > li > a:hover {
