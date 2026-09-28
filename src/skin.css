@@ -1607,7 +1607,13 @@ html.qu-x #contentBelt ul.items > li > a {
   width: auto !important;
   height: 100% !important;
   box-sizing: border-box !important;
-  padding: 12px 16px !important;
+  /* cascade.css draws a 1px #999 border on hover and pulls the option back
+     with margin: -1px. The border is kept, transparent at rest, so the hover
+     only changes its colour and nothing moves; the padding gives that 1px
+     back. */
+  margin: 0 !important;
+  padding: 11px 15px !important;
+  border: 1px solid transparent !important;
   min-height: 44px !important;
   color: var(--x-ink) !important;
   border-radius: var(--x-r-card) !important;
@@ -1632,12 +1638,14 @@ html.qu-x #contentBelt ul.items > li > a::after {
 html.qu-x.qu-ar #contentBelt ul.items > li > a::after {
   transform: scaleX(-1) !important;
 }
-/* Hover: the option's text takes the primary colour and its label slides
-   5px toward the reading end. Dark scopes use the primary's lifted text tone,
-   since plain burgundy on near-black would not read. */
+/* Hover: the option's text and border take the primary colour and its label
+   slides 5px toward the reading end. Dark scopes use the primary's lifted
+   text tone, since plain burgundy on near-black would not read. The border
+   follows the text colour, so every scope's override below turns it too. */
 html.qu-x #contentBelt ul.items > li > a:hover {
   background: var(--x-surface) !important;
   color: var(--x-brand) !important;
+  border-color: currentColor !important;
   text-decoration: none !important;
 }
 html.qu-x[data-qux$='-dark'] #contentBelt ul.items > li > a:hover {
