@@ -6,7 +6,7 @@ Same server, same pages, same data — only the presentation changes. Nothing is
 added to your record, nothing is removed from it, and no page content is
 rewritten.
 
-Two themes from one design system: institutional **QU maroon** and the
+Two themes from one design system: institutional **QU burgundy** and the
 chapter's own **ACM mint**, each in light and dark.
 
 Built and maintained by the **ACM Student Chapter at Qatar University**.
@@ -48,9 +48,9 @@ myBanner tab afterwards.
 ## Using it
 
 **The toolbar popup** — click the extension's icon for the on/off switch, the
-theme (QU maroon or ACM mint), the appearance (auto, light, dark) and an
+theme (QU burgundy or ACM mint), the appearance (auto, light, dark) and an
 Animations switch. The popup wears the theme you pick. Out of the box it is
-QU maroon, light, with animations on.
+QU burgundy, light, with animations on.
 
 Turning it off hands the page straight back to Banner, untouched. Your choices
 are stored in Chrome's own sync storage, so they follow your Chrome profile

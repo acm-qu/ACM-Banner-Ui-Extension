@@ -1618,7 +1618,7 @@ html.qu-x.qu-ar #contentBelt ul.items > li > a::after {
 }
 /* Hover: the option's text takes the primary colour and its label slides
    5px toward the reading end. Dark scopes use the primary's lifted text tone,
-   since plain maroon on near-black would not read. */
+   since plain burgundy on near-black would not read. */
 html.qu-x #contentBelt ul.items > li > a:hover {
   background: var(--x-surface) !important;
   color: var(--x-brand) !important;
