@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ACM Banner Redesign",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Restyles mybanner.qu.edu.qa in place. Two themes (QU / ACM), light and dark, EN and AR. Same server, same pages, same data.",
   "permissions": ["storage"],
   "host_permissions": ["https://mybanner.qu.edu.qa/*"],
@@ -34,6 +34,15 @@
       "32": "assets/icon/32.png",
       "48": "assets/icon/48.png",
       "128": "assets/icon/128.png"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "banner-redesign@qu.acm.org",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   }
 }

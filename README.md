@@ -1,6 +1,6 @@
 # ACM Banner Redesign
 
-A Chrome extension that restyles **mybanner.qu.edu.qa** in place.
+A Chrome and Firefox extension that restyles **mybanner.qu.edu.qa** in place.
 
 Same server, same pages, same data — only the presentation changes. Nothing is
 added to your record, nothing is removed from it, and no page content is
@@ -15,33 +15,52 @@ Built and maintained by the **ACM Student Chapter at Qatar University**.
 
 ## Install
 
-The extension is not on the Chrome Web Store, so it installs unpacked. It takes
-about a minute.
+The extension is not on the Chrome Web Store or Firefox Add-ons yet, so it
+loads from a folder on your computer. It takes about a minute.
 
-1. **Download this repository.** Either `git clone` it, or use the green
-   **Code** button → **Download ZIP** and unzip it somewhere you will not
-   delete by accident. Chrome loads the extension from that folder every time
-   it starts, so don't leave it in Downloads.
-2. Open `chrome://extensions` in Chrome.
-3. Turn on **Developer mode**, top right.
-4. Click **Load unpacked** and select the folder you just unzipped — the one
+**Download this repository first.** Either `git clone` it, or use the green
+**Code** button → **Download ZIP** and unzip it somewhere you will not delete
+by accident. Your browser loads the extension from that folder, so don't leave
+it in Downloads.
+
+### Chrome
+
+1. Open `chrome://extensions` in Chrome.
+2. Turn on **Developer mode**, top right.
+3. Click **Load unpacked** and select the folder you just unzipped — the one
    containing `manifest.json`.
-5. **Sign in to myBanner first**, then open the main menu:
+4. **Sign in to myBanner first**, then open the main menu:
    <https://mybanner.qu.edu.qa/PROD/twbkwbis.P_GenMenu?name=bmenu.P_MainMnu>
+
+Chrome will show "Developer mode extensions" warnings on startup. That is
+normal for any unpacked extension and can be dismissed.
+
+### Firefox
+
+Firefox 140 or later. Firefox keeps an add-on across restarts only once Mozilla
+has signed it, so until the extension is on Firefox Add-ons it loads as a
+temporary add-on, which Firefox removes when it closes:
+
+1. Open `about:debugging#/runtime/this-firefox` in Firefox.
+2. Click **Load Temporary Add-on…** and select `manifest.json` in the folder
+   you just unzipped.
+3. **Sign in to myBanner first**, then open the main menu link above.
+
+If the page does not change, Firefox may be holding back the extension's access
+to the site: open `about:addons` → **ACM Banner Redesign** → **Permissions** and
+allow `mybanner.qu.edu.qa`.
 
 > **Sign in before you load the extension, and reach myBanner from a
 > bookmark or a link rather than by typing the bare address.** This is a quirk
 > of Banner itself, not of the extension — see
 > [Why not the bare address?](#why-not-the-bare-address) below.
 
-Chrome will show "Developer mode extensions" warnings on startup. That is
-normal for any unpacked extension and can be dismissed.
-
 ### Updating
 
-`git pull` (or download the ZIP again and replace the folder), then click the
-refresh icon on the extension's card in `chrome://extensions`. Reload any open
-myBanner tab afterwards.
+`git pull` (or download the ZIP again and replace the folder), then reload the
+extension: the refresh icon on its card in `chrome://extensions`, or **Reload**
+on its card in Firefox's `about:debugging`. Reload any open myBanner tab
+afterwards.
 
 ---
 
@@ -53,8 +72,8 @@ switch. The popup wears the theme you pick. Out of the box it is QU, light,
 with animations on.
 
 Turning it off hands the page straight back to Banner, untouched. Your choices
-are stored in Chrome's own sync storage, so they follow your Chrome profile
-across machines.
+are stored in the browser's own sync storage, so they follow your Chrome
+profile, or your Firefox account when Firefox Sync is on, across machines.
 
 ---
 
@@ -99,9 +118,10 @@ the chapter about it.
 other page, but the code never reads, writes, prefills, autofills or submits a
 username, PIN or password field.
 
-**It stores five things**, all in Chrome's sync storage: your theme, your
+**It stores five things**, all in the browser's sync storage: your theme, your
 appearance setting, your language setting, whether animations are on, and
-whether the extension is on.
+whether the extension is on. On Firefox it declares that it collects no data,
+and Firefox shows that when you install it.
 Your student ID, name, grades, address and balances are displayed and styled
 like any other text on the page — never logged, stored or transmitted.
 
@@ -153,7 +173,7 @@ For anyone reading or extending the code.
 gives `<body>` no class or id, so the script first derives a page identity from
 the URL (`html.qu-x`, `.qu-menu` / `.qu-leaf`, `.qu-home`, `.qu-anon` /
 `.qu-auth`). It stamps the theme before first paint, then corrects it once
-Chrome's storage resolves, and holds a visibility guard that always lifts —
+the browser's storage resolves, and holds a visibility guard that always lifts —
 on `DOMContentLoaded`, on `load`, and on a 1200ms hard fallback.
 
 Everything after that runs from a `MutationObserver`. Menu drilling in this
@@ -200,6 +220,9 @@ Worth knowing before you rely on it:
   account detail views — were built against captured markup rather than an
   observed live response. They should be correct; report anything that isn't.
 - Print output for the Academic Transcript has not been checked on paper.
+- In Firefox, level-3 panels and search results open and close without the
+  slide: Firefox cannot yet animate a height to `auto`. Everything else is the
+  same in both browsers.
 - **Proxy Access** is deliberately left out of the menus: its menu returns a
   404 on the live site.
 
