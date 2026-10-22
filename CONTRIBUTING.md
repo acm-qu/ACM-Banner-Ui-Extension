@@ -45,12 +45,16 @@ around.
 selector, for the reasons in the README.
 
 To try a change: edit the file, hit refresh on the extension's card in
-`chrome://extensions`, then reload your myBanner tab. `window.__quEnhancer` in
-the console exposes a `stats()` helper and the current theme.
+`chrome://extensions` (in Firefox, **Reload** on its card in
+`about:debugging#/runtime/this-firefox`), then reload your myBanner tab.
+`window.__quEnhancer` in the console exposes a `stats()` helper and the current
+theme.
 
 Before opening a pull request, walk a menu page, a leaf page and the Academic
 Transcript in all four theme scopes (QU and ACM, light and dark), and check
-that turning the extension off still hands back a clean page.
+that turning the extension off still hands back a clean page. The extension
+runs in Chrome and Firefox from the same files, so look at the menu page in
+Firefox too.
 
 ## Comments
 

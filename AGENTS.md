@@ -6,14 +6,14 @@ file assumes both and does not repeat them.
 
 ## What this is
 
-A Chrome MV3 extension that restyles `mybanner.qu.edu.qa` (Ellucian Banner 8.11
+A Chrome and Firefox MV3 extension that restyles `mybanner.qu.edu.qa` (Ellucian Banner 8.11
 Self-Service, Oracle PL/SQL behind ORDS, jQuery 1.6.1, Ellucian "Cascade" UI) in
 place. Presentation only — no network access, no page content rewritten. The
 whole extension is a manifest and four files in `src/`:
 
 | File | Role |
 |---|---|
-| `manifest.json` | MV3 manifest; injects the content script + sheet at `document_start` |
+| `manifest.json` | MV3 manifest, one for both browsers; injects the content script + sheet at `document_start` |
 | `src/enhance.js` | ~1,900-line content script: page identity, theme, DOM tagging |
 | `src/skin.css` | ~3,700-line sheet, sections 0–17 plus 1b and 7b |
 | `src/popup.html` / `src/popup.js` | Toolbar popup; writes prefs to `chrome.storage.sync` |
@@ -24,7 +24,8 @@ There is **no build, no test suite, no linter, and no `package.json`**. Files ar
 loaded as written. Do not add npm scripts or invent commands.
 
 1. Edit the file.
-2. Hit refresh on the extension's card in `chrome://extensions`.
+2. Hit refresh on the extension's card in `chrome://extensions` (in Firefox,
+   **Reload** on its card in `about:debugging#/runtime/this-firefox`).
 3. Reload the myBanner tab.
 
 Console helpers on a Banner page:
@@ -44,7 +45,8 @@ selectors only, never page text, and logs nothing. Both lists must be empty.
 Before opening a PR, walk a menu page, a leaf page and the Academic Transcript in
 all four theme scopes (`qu-light`, `qu-dark`, `acm-light`, `acm-dark`), run
 `audit()` on each at desktop and phone widths, and check that turning the
-extension off hands back a clean page.
+extension off hands back a clean page. Do it in Chrome, and at least the menu
+page in Firefox.
 
 ## Non-negotiables
 
@@ -281,6 +283,36 @@ and 404s. **Every asset URL is therefore written at runtime through
 
 Everything is bundled; nothing is fetched.
 
+## Firefox
+
+One `manifest.json` serves both browsers. There is no Firefox build and no
+second manifest.
+
+- **`browser_specific_settings.gecko` is Firefox's alone.** Chrome skips it
+  without a warning (Chromium lists it in `kIgnoredUnrecognizedKeys`), so it
+  stays in the shared manifest.
+- **The `id` (`banner-redesign@qu.acm.org`) is permanent** once a version is on
+  addons.mozilla.org: a different id is a different add-on, and users would
+  lose their install. `storage.sync` in Firefox depends on it too.
+- **`data_collection_permissions: { "required": ["none"] }`** is required by
+  AMO for new add-ons and must stay in every later version. It is true —
+  nothing is collected — and the non-negotiables keep it true.
+- **`strict_min_version` is 140**: the first Firefox that understands
+  `data_collection_permissions` natively, and an ESR. `@starting-style` and
+  `transition-behavior` arrived in 129.
+- **Use `chrome.*` with callbacks**, as the code does. Firefox implements the
+  same namespace for MV3, so there is no polyfill. Check that an API exists in
+  both browsers before using it.
+- **Firefox cannot animate a size to `auto`** (no `interpolate-size`), so the
+  slide-downs become an instant open and close there. That is the intended
+  fallback: anything new that animates a size must degrade the same way and
+  never leave content hidden.
+- Fonts and icons resolve to `moz-extension://` URLs in Firefox; the
+  `web_accessible_resources` entry covers them, and they load without CORS
+  trouble.
+- To test, open `about:debugging#/runtime/this-firefox` → **Load Temporary
+  Add-on…** → `manifest.json`. It stays loaded until Firefox closes.
+
 ## Versioning and releases
 
 Bump **two** places together:
@@ -288,10 +320,21 @@ Bump **two** places together:
 - `manifest.json` → `version`
 - `src/enhance.js` → `VERSION` (the footer's "Release:" line and `__quEnhancer.version`)
 
-The popup reads its version from the manifest.
+The popup reads its version from the manifest. AMO refuses an upload whose
+version is not higher than the last one it accepted.
 
 There are no git tags. Releases are marked in the commit subject, e.g.
 `Fixed bug where the dropdown would dock right after opening, release as 1.0.2`.
+
+To package a release for AMO, zip the committed extension files only:
+
+```sh
+git archive --format=zip -o acm-banner-redesign-<version>.zip HEAD manifest.json src assets
+```
+
+`git archive` takes committed files, so `references/` can never end up in the
+upload, and `*.zip` is gitignored. Nothing is minified or bundled, so AMO needs
+no separate source upload.
 
 ## references/ (untracked, may be absent)
 

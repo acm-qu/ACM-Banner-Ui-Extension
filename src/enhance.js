@@ -42,7 +42,7 @@
 
   // The extension's release: the footer shows it and __quEnhancer reports it.
   // Bump it together with "version" in manifest.json.
-  const VERSION = '1.1.0';
+  const VERSION = '1.2.0';
 
   // --- Theme, stamped before first paint ---
 
